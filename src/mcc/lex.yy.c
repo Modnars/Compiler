@@ -371,11 +371,11 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[50] =
     {   0,
-        0,    0,   27,   26,    1,    2,   26,   26,   26,   17,
-       18,    6,    6,   24,   26,    7,   23,   11,   10,   13,
-        5,   19,   20,   21,   22,    1,   16,    0,    0,    9,
-        8,    0,    7,   12,    0,   15,   14,    5,   25,    0,
-        0,    0,    0,    0,    4,    0,    0,    3,    0
+        0,    0,   27,   26,    3,    4,   26,   26,   26,   17,
+       18,    8,    8,   24,   26,    2,   23,   11,   10,   13,
+        7,   19,   20,   21,   22,    3,   16,    0,    0,    9,
+        1,    0,    2,   12,    0,   15,   14,    7,   25,    0,
+        0,    0,    0,    0,    6,    0,    0,    5,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -494,8 +494,12 @@ char *yytext;
     /* definitions of manifest constants
     LT, LE, EQ, NE, GT, GE,
     IF, THEN, ELSE, ID, NUMBER, RELOP */
+//digit       [0-9]+
+//float       [0-9]*\.[0-9]+
+//{digit}     printf("[DIGIT   : %-8s]\n", yytext);
+//{float}     printf("[FLOAT   : %-8s]\n", yytext);
 /* regular definitions */
-#line 499 "lex.yy.c"
+#line 503 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -677,10 +681,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 26 "token.lex"
+#line 28 "token.lex"
 
 
-#line 684 "lex.yy.c"
+#line 688 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -765,28 +769,38 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 28 "token.lex"
-{ /* no action and no return */ }
+#line 30 "token.lex"
+printf("Here Double\n");
 	YY_BREAK
 case 2:
-/* rule 2 can match eol */
 YY_RULE_SETUP
-#line 29 "token.lex"
-printf("\n");
+#line 31 "token.lex"
+printf("Here Digit\n");
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 30 "token.lex"
-printf("[PRE_PROCESS       ]\n");
+#line 32 "token.lex"
+{ /* no action and no return */ }
 	YY_BREAK
 case 4:
+/* rule 4 can match eol */
 YY_RULE_SETUP
-#line 31 "token.lex"
-printf("[HEADFILE: %-8s]\n", yytext);
+#line 33 "token.lex"
+printf("\n");
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 32 "token.lex"
+#line 34 "token.lex"
+printf("[PRE_PROCESS       ]\n");
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 35 "token.lex"
+printf("[HEADFILE: %-8s]\n", yytext);
+	YY_BREAK
+case 7:
+YY_RULE_SETUP
+#line 36 "token.lex"
 { 
                 int id;
                 if ((id = search_key(yytext)) != 0)
@@ -796,112 +810,102 @@ YY_RULE_SETUP
                 // { yylval = (int) installID(); return (ID); }
             }
 	YY_BREAK
-case 6:
-YY_RULE_SETUP
-#line 41 "token.lex"
-printf("[OPERATOR: %-8s]\n", yytext);
-	YY_BREAK
-case 7:
-YY_RULE_SETUP
-#line 42 "token.lex"
-printf("[DIGIT   : %-8s]\n", yytext);
-	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 43 "token.lex"
-printf("[FLOAT   : %-8s]\n", yytext);
+#line 45 "token.lex"
+printf("[OPERATOR: %-8s]\n", yytext);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 45 "token.lex"
+#line 47 "token.lex"
 printf("[INC     : %-8s]\n", yytext);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 47 "token.lex"
+#line 49 "token.lex"
 printf("[ASSIGN            ]\n");
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 48 "token.lex"
+#line 50 "token.lex"
 printf("[LESS_THAN         ]\n"); // { yylval = LT; return (RELOP); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 49 "token.lex"
+#line 51 "token.lex"
 printf("[LESS_OR_EQUAL     ]\n"); // { yylval = LE; return (RELOP); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 50 "token.lex"
+#line 52 "token.lex"
 printf("[GREAT_THAN        ]\n"); // { yylval = GT; return (RELOP); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 51 "token.lex"
+#line 53 "token.lex"
 printf("[GREAT_OR_EQUAL    ]\n"); // { yylval = GE; return (RELOP); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 52 "token.lex"
+#line 54 "token.lex"
 printf("[EQUAL             ]\n"); // { yylval = EQ; return (RELOP); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 53 "token.lex"
+#line 55 "token.lex"
 printf("[NOT_EQUAL         ]\n"); // { yylval = NE; return (RELOP); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 54 "token.lex"
+#line 56 "token.lex"
 printf("[LEFT_SMALL_BRACE  ]\n");
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 55 "token.lex"
+#line 57 "token.lex"
 printf("[RIGHT_SMALL_BRACE ]\n");
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 56 "token.lex"
+#line 58 "token.lex"
 printf("[LEFT_MID_BRACE    ]\n");
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 57 "token.lex"
+#line 59 "token.lex"
 printf("[RIGHT_MID_BRACE   ]\n");
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 58 "token.lex"
+#line 60 "token.lex"
 printf("[LEFT_BIG_BRACE    ]\n");
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 59 "token.lex"
+#line 61 "token.lex"
 printf("[RIGHT_BIG_BRACE   ]\n");
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 60 "token.lex"
+#line 62 "token.lex"
 printf("[SEMICOLON         ]\n");
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 61 "token.lex"
+#line 63 "token.lex"
 printf("[COMMA             ]\n");
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 62 "token.lex"
+#line 64 "token.lex"
 printf("[STRING            ]\n");
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 64 "token.lex"
+#line 66 "token.lex"
 ECHO;
 	YY_BREAK
-#line 905 "lex.yy.c"
+#line 909 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1898,7 +1902,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 64 "token.lex"
+#line 66 "token.lex"
 
 
 

@@ -10,14 +10,16 @@
     /* definitions of manifest constants
     LT, LE, EQ, NE, GT, GE,
     IF, THEN, ELSE, ID, NUMBER, RELOP */
+//digit       [0-9]+
+//float       [0-9]*\.[0-9]+
+//{digit}     printf("[DIGIT   : %-8s]\n", yytext);
+//{float}     printf("[FLOAT   : %-8s]\n", yytext);
 %}
 
 /* regular definitions */
 delim       [ \t]
 ws          {delim}+
 letter      [A-Za-z]
-digit       [0-9]+
-float       [0-9]*\.[0-9]+
 id          ([_a-zA-Z])([_a-zA-Z0-9])*
 string      \".+\"
 head_file   \<[A-Za-z]+\.h\>
@@ -25,6 +27,8 @@ operator    [\+\-\*\/]
 
 %%
 
+[0-9]*\.[0-9]+  printf("Here Double\n");
+[0-9]+          printf("Here Digit\n");
 {ws}        { /* no action and no return */ }
 \n          printf("\n");
 #include    printf("[PRE_PROCESS       ]\n");
@@ -39,8 +43,6 @@ operator    [\+\-\*\/]
             }
 
 {operator}  printf("[OPERATOR: %-8s]\n", yytext);
-{digit}     printf("[DIGIT   : %-8s]\n", yytext);
-{float}     printf("[FLOAT   : %-8s]\n", yytext);
 
 "++"        printf("[INC     : %-8s]\n", yytext);
 
