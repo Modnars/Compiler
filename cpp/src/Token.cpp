@@ -1,0 +1,54 @@
+// Name   : scanner.hpp
+// Author : Modnar
+// Date   : 2019-05-18
+// Copyright (C) 2019 Modnar. All rights reserved.
+
+#include "lib/Token.hpp"
+
+Token &Token::operator=(int i) {
+    if (type == CSTRING) sval.~basic_string();
+    ival = i;
+    type = CINT;
+    return *this;
+}
+
+Token &Token::operator=(bool b) {
+    if (type == CSTRING) sval.~basic_string();
+    bval = b;
+    type = CBOOL;
+    return *this;
+}
+
+Token &Token::operator=(double d) {
+    if (type == CSTRING) sval.~basic_string();
+    dval = d;
+    type = CREAL;
+    return *this;
+}
+
+Token &Token::operator=(const std::string &s) {
+    if (type == CSTRING) {
+        sval = s;
+    } else {
+        new (&sval) std::string(s);
+        type = CSTRING;
+    }
+    return *this;
+}
+
+void Token::copyUnion(const Token &t) {
+    switch (t.type) {
+        case Token::CINT : ival = t.ival; break;
+        case Token::CBOOL : bval = t.bval; break;
+        case Token::CREAL : dval = t.dval; break;
+        case Token::CSTRING : new (&sval) std::string(t.sval); break;
+    }
+}
+
+Token &Token::operator=(const Token &t) {
+    if (type == CSTRING && t.type != CSTRING) sval.~basic_string();
+    if (type == CSTRING && t.type == CSTRING) sval = t.sval;
+    else copyUnion(t);
+    type = t.type;
+    return *this;
+}

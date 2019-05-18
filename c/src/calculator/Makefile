@@ -29,4 +29,4 @@ run :
 	./$(PROGRAM)
 
 clean :
-	rm *.o $(SCANNER).c $(PARSER).c $(PARSER).h $(PARSER).output
+	rm *.o $(SCANNER).c $(PARSER).c $(PARSER).h $(PARSER).output $(PROGRAM)
