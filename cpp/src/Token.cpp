@@ -38,10 +38,11 @@ Token &Token::operator=(const std::string &s) {
 
 void Token::copyUnion(const Token &t) {
     switch (t.type) {
-        case Token::CINT : ival = t.ival; break;
-        case Token::CBOOL : bval = t.bval; break;
-        case Token::CREAL : dval = t.dval; break;
-        case Token::CSTRING : new (&sval) std::string(t.sval); break;
+        case CINT : ival = t.ival; break;
+        case CBOOL : bval = t.bval; break;
+        case CREAL : dval = t.dval; break;
+        case CSTRING : new (&sval) std::string(t.sval); break;
+        default : break;
     }
 }
 
@@ -50,5 +51,6 @@ Token &Token::operator=(const Token &t) {
     if (type == CSTRING && t.type == CSTRING) sval = t.sval;
     else copyUnion(t);
     type = t.type;
+    recognized = t.recognized;
     return *this;
 }

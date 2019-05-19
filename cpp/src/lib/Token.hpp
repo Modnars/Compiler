@@ -14,6 +14,7 @@ class Token {
 public:
     Token() : type(CINT), ival{0} { }
     Token(const Token &t) : type(t.type) { copyUnion(t); }
+    Token(const std::string &s, BASIC_TYPE type) : recognized(s), type(type) { }
     Token &operator=(const Token&);
 
     ~Token() { if (type == CSTRING) sval.~basic_string(); }
@@ -24,7 +25,8 @@ public:
     Token &operator=(const std::string &);
 
 private:
-    enum { CINT, CBOOL, CREAL, CSTRING } type;
+    BASIC_TYPE type;
+    std::string recognized;
     union {
         int ival;
         bool bval;

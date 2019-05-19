@@ -6,15 +6,6 @@
 #ifndef BASE_HPP
 #define BASE_HPP
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <utility>
-#include <map>
-#include <set>
-#include <memory>
-
 // Define Basic type.
 typedef enum {
     /* Data type */
