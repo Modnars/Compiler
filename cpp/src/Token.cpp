@@ -3,7 +3,9 @@
 // Date   : 2019-05-18
 // Copyright (C) 2019 Modnar. All rights reserved.
 
-#include "lib/Token.hpp"
+#include <memory>
+
+#include "include/Token.hpp"
 
 Token &Token::operator=(int i) {
     if (type == CSTRING) sval.~basic_string();
