@@ -4,11 +4,14 @@
 // Copyright (C) 2019 Modnar. All rights reserved.
 
 #include <iostream>
+#include <cstdlib>
 
 #include "scanner.hpp"
 
-int main(int argc, char *argv[]) {
-    scan();
+int main(int argc, const char *argv[]) {
+    scan(std::cerr);
+    Token tt(Mark::INT);
+    std::cout << tt << std::endl;
     std::cout << "OK!" << std::endl;
-    return 0;
+    return EXIT_SUCCESS;
 }
