@@ -3,11 +3,12 @@
 // Date   : 2019-05-18
 // Copyright (C) 2019 Modnar. All rights reserved.
 
-#ifndef SCANNER_HPP
-#define SCANNER_HPP
+#ifndef __SCANNER_HPP
+#define __SCANNER_HPP
 
-#include <map>
-#include <string>
-#include <vector>
+#include <iostream>
+#include "Compiler.hpp"
 
-#endif /* SCANNER_HPP */
+extern int scan(std::ostream &os = std::cout);
+
+#endif /* __SCANNER_HPP */

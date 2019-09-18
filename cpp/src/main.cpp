@@ -5,9 +5,10 @@
 
 #include <iostream>
 
-#include "Token.hpp"
+#include "scanner.hpp"
 
 int main(int argc, char *argv[]) {
+    scan();
     std::cout << "OK!" << std::endl;
     return 0;
 }
