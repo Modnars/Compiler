@@ -41,10 +41,7 @@ Mark Token::getMark() const {
  * @return the token's lexeme.
  */
 std::string Token::getLexeme() const {
-    if (isLexeme()) {
-        return lexeme;
-    }
-    return "";
+    return isLexeme() ? lexeme : "";
 }
 
 /**
@@ -62,12 +59,30 @@ int Token::getWidth() const {
  * @return true if the token is a lexeme, otherwise return false.
  */
 bool Token::isLexeme() const {
-    // TODO Whether should be implemented with 'switch'? Waiting for test.
-    if (mark == Mark::AND || mark == Mark::OR || mark == Mark::EQ || mark == Mark::NE ||
-        mark == Mark::LE  || mark == Mark::GE || mark == Mark::TRUE || 
-        mark == Mark::FALSE || mark == Mark::MINUS || mark == Mark::TEMP || 
-        mark == Mark::INT || mark == Mark::REAL)
-        return true;
+    switch (mark) {
+        case Mark::AND  :
+        case Mark::OR   :
+        case Mark::EQ   :
+        case Mark::NE   :
+        case Mark::LE   :
+        case Mark::GE   :
+        case Mark::TRUE :
+        case Mark::FALSE:
+        case Mark::MINUS:
+        case Mark::TEMP :
+        case Mark::INT  :
+        case Mark::BOOL :
+        case Mark::CHAR :
+        case Mark::REAL :
+        case Mark::IF   :
+        case Mark::ELSE :
+        case Mark::WHILE:
+        case Mark::DO   :
+        case Mark::BREAK:
+            return true;
+        default:
+            break;
+    }
     return false;
 }
 
@@ -84,8 +99,11 @@ void Token::copyUnion(const Token &tk) {
     if (tk.isLexeme()) new(&lexeme) std::string(tk.lexeme);
 }
 
-std::ostream &operator<<(std::ostream &os, const Token &tok) {
-    os << "Tk:" << (int)tok.getMark() << " " << tok.getLexeme();
+/* Overload the operator '<<' to format the output Token. */
+std::ostream &operator<<(std::ostream &os, const Token &tk) {
+    os << "TokenNo." << (int)tk.getMark();
+    if (tk.isLexeme()) 
+        os << "\tLexeme:" << tk.getLexeme();
     return os;
 }
 

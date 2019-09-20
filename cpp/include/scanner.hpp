@@ -16,23 +16,32 @@ extern int scan(std::ostream &os = std::cout);
 // extern std::shared_ptr<Token> recognize();
 
 /* Mark the basic data type. */
-extern const Token Int, Real, Char, Bool;
+extern std::shared_ptr<Token> Int, Real, Char, Bool;
 
 /* Mark the basic reserved words. */
-extern const Token And, Or, True, False, eq, ne, le, ge, minus, temp;
+extern std::shared_ptr<Token> And, Or, True, False, eq, ne, le, ge, minus, temp;
 
 /* Scanner is used to scan the source file, and get the recognized tokens. */
 class Scanner {
 public:
     static int line;
     char peek = ' ';
-    std::shared_ptr<std::map<std::string, Token>> words;
+    std::shared_ptr<std::map<std::string, std::shared_ptr<Token>>> words = nullptr;
 
-    // Check the token whether is lexeme.
-    // void reserve(Token tk);
-    void increase(); 
+    // TODO Need to check whether the Token object is a lexeme.
+    void reserve(std::shared_ptr<Token> tk);
 
-    Scanner() { }
+    Scanner() { 
+        words = std::make_shared<std::map<std::string, std::shared_ptr<Token>>>();
+        reserve(std::make_shared<Token>("if", Mark::IF));
+        reserve(std::make_shared<Token>("else", Mark::ELSE));
+        reserve(std::make_shared<Token>("do", Mark::DO));
+        reserve(std::make_shared<Token>("while", Mark::WHILE));
+        reserve(std::make_shared<Token>("break", Mark::BREAK));
+        reserve(True); reserve(False);
+        reserve(Int);  reserve(Char);
+        reserve(Bool); reserve(Real);
+    }
 };
 
 #endif /* __SCANNER_HPP */

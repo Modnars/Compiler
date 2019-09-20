@@ -7,22 +7,33 @@
 
 #include "scanner.hpp"
 
-/* Several special constraint token. */
-const Token Int("int",   Mark::INT,  4), Real("real", Mark::REAL, 8),
-            Char("char", Mark::CHAR, 1), Bool("bool", Mark::BOOL, 1);
+typedef std::shared_ptr<Token> token_ptr;
 
-const Token And("&&", Mark::AND), eq("==", Mark::EQ), ne("!=", Mark::NE), 
-            Or("||", Mark::OR),   le("<=", Mark::LE), ge(">=", Mark::GE),
-            True("true", Mark::TRUE),    False("false", Mark::FALSE), 
-            minus("minus", Mark::MINUS), temp("t", Mark::TEMP);
+/* Several special constraint token. */
+std::shared_ptr<Token> Int   = std::make_shared<Token>("int", Mark::INT, 4), 
+                       Real  = std::make_shared<Token>("real", Mark::REAL, 8),
+                       Char  = std::make_shared<Token>("char", Mark::CHAR, 1), 
+                       Bool  = std::make_shared<Token>("bool", Mark::BOOL, 1);
+
+std::shared_ptr<Token> And   = std::make_shared<Token>("&&", Mark::AND),
+                       Or    = std::make_shared<Token>("||", Mark::OR),
+                       True  = std::make_shared<Token>("true", Mark::TRUE),    
+                       False = std::make_shared<Token>("false", Mark::FALSE), 
+                       eq    = std::make_shared<Token>("==", Mark::EQ), 
+                       ne    = std::make_shared<Token>("!=", Mark::NE), 
+                       le    = std::make_shared<Token>("<=", Mark::LE), 
+                       ge    = std::make_shared<Token>(">=", Mark::GE),
+                       minus = std::make_shared<Token>("minus", Mark::MINUS), 
+                       temp  = std::make_shared<Token>("t", Mark::TEMP);
+
+int Scanner::line = 1;
+
+void Scanner::reserve(std::shared_ptr<Token> tk) {
+    (*words)[tk->getLexeme()] = tk;
+}
 
 int scan(std::ostream &os) {
     os << "Scanning...\nDone." << std::endl;
     return EXIT_SUCCESS;
 }
 
-int Scanner::line = 1;
-
-void Scanner::increase() {
-    line += 1;
-}

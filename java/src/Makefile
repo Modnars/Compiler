@@ -1,8 +1,8 @@
-CC            =javac
-CFLAGS        =-d
-DRIVER        =java
-PROGRAM       =main.Main
-TARGET_FOLDER =../bin/
+CC         =javac
+CFLAGS     =-d
+DRIVER     =java
+PROGRAM    =main.Main
+TARGET_DIR =../bin/
 
 all :
 	$(CC) $(CFLAGS) $(TARGET_FOLDER) lexer/*.java
@@ -12,7 +12,7 @@ all :
 	$(CC) $(CFLAGS) $(TARGET_FOLDER) main/*.java
 
 run :
-	cd $(TARGET_FOLDER) && $(DRIVER) $(PROGRAM)
+	cd $(TARGET_DIR) && $(DRIVER) $(PROGRAM)
 
 test :
-	cd $(TARGET_FOLDER); cat ../file/test.cpp | $(DRIVER) $(PROGRAM)
+	cd $(TARGET_DIR); cat ../file/test.cpp | $(DRIVER) $(PROGRAM)
