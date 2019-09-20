@@ -12,7 +12,7 @@
 #include <memory>
 
 class Scanner;
-extern int scan(std::ostream &os = std::cout);
+// extern int scan(std::istream &is = std::cin, std::ostream &os = std::cerr);
 // extern std::shared_ptr<Token> recognize();
 
 /* Mark the basic data type. */
@@ -42,6 +42,13 @@ public:
         reserve(Int);  reserve(Char);
         reserve(Bool); reserve(Real);
     }
+
+    // TODO Set the default parameters' value.
+    std::shared_ptr<Token> scan(std::istream &is, std::ostream &os);
+
+private:
+    void readch(std::istream &);
+    bool readch(char, std::istream &);
 };
 
 #endif /* __SCANNER_HPP */
