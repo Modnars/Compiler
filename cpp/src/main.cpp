@@ -4,6 +4,8 @@
 // Copyright (C) 2019 Modnar. All rights reserved.
 
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <cstdlib>
 
 #include <cstdio> // For printing colorful text.
@@ -33,6 +35,36 @@ void set_exit_test_color() {
     printf("%s", NONE); 
 }
 
+int test_for_token_output() {
+    set_enter_test_color("Token's output");
+    Token tt = Token("if", Mark::IF);
+    std::cout << tt << std::endl;
+    std::cout << "OK!" << std::endl;
+    set_exit_test_color();
+    return EXIT_SUCCESS;
+}
+
+int test_for_token_value() {
+    set_enter_test_color("Token's value");
+    std::vector<std::shared_ptr<Token>> tokenVec;
+    tokenVec.push_back(make_token(100));
+    tokenVec.push_back(make_token(true));
+    tokenVec.push_back(make_token('c'));
+    tokenVec.push_back(make_token(123.123));
+    // Warning: When you want to use the token to store a string's value, please 
+    //          make sure you passed a string to it. Otherwise it might be 
+    //          recognized as a boolean value.
+    // For example: make_token("Hello"); 
+    // The function will return a pointer to a token object whose value is a 'true' 
+    // boolean value.
+    tokenVec.push_back(make_token(std::string("Hello"))); 
+    for (auto ptr : tokenVec) {
+        std::cout << *ptr << std::endl;
+    }
+    set_exit_test_color();
+    return EXIT_SUCCESS;
+}
+
 int test_for_scanner_constructor() {
     set_enter_test_color("Scanner's constructor");
     Scanner sc;
@@ -43,17 +75,21 @@ int test_for_scanner_constructor() {
     return EXIT_SUCCESS;
 }
 
-int test_for_token_output() {
-    set_enter_test_color("Token's output");
-    Token tt = Token("if", Mark::IF);
-    std::cout << tt << std::endl;
-    std::cout << "OK!" << std::endl;
+int test_for_scanner_scan() {
+    set_enter_test_color("Scanner's scan function");
+    Scanner scanner;
+    std::ifstream is("../test/main.m");
+    while (is) {
+        std::cout << *scanner.scan(is) << std::endl;
+    }
     set_exit_test_color();
     return EXIT_SUCCESS;
 }
 
 int main(int argc, const char *argv[]) {
-    test_for_token_output();
-    test_for_scanner_constructor();
+    //test_for_token_output();
+    //test_for_token_value();
+    //test_for_scanner_constructor();
+    test_for_scanner_scan();
     return EXIT_SUCCESS;
 }

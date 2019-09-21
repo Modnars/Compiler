@@ -4,6 +4,7 @@
 // Copyright (C) 2019 Modnar. All rights reserved.
 
 #include <cstdlib>
+#include <cctype>
 
 #include "scanner.hpp"
 
@@ -30,7 +31,7 @@ void Scanner::reserve(std::shared_ptr<Token> tk) {
     (*words)[tk->getLexeme()] = tk;
 }
 
-std::shared_ptr<Token> Scanner::scan(std::istream &is, std::ostream &os) {
+std::shared_ptr<Token> Scanner::scan(std::istream &is) {
     for ( ; ; readch(is)) {
         if (peek == ' ' || peek == '\t') continue;
         else if (peek == '\n') ++line;
@@ -39,29 +40,56 @@ std::shared_ptr<Token> Scanner::scan(std::istream &is, std::ostream &os) {
     switch (peek) {
         case '&':
             if (readch('&', is)) return And; 
-            else return std::make_shared<Token>(Mark::AND);
+            else return make_token("&", Mark::TK);
         case '|':
             if (readch('|', is)) return Or;
-            else return std::make_shared<Token>(Mark::OR);
+            else return make_token("|", Mark::TK);
         case '=':
             if (readch('=', is)) return eq;
-            else return std::make_shared<Token>(Mark::ASSIGN);
+            else return make_token("=", Mark::TK);
         case '!':
             if (readch('=', is)) return ne;
-            else return std::make_shared<Token>(Mark::LNOT);
+            else return make_token("!", Mark::TK);
         case '<':
             if (readch('=', is)) return le;
-            else return std::make_shared<Token>(Mark::LT);
+            else return make_token("<", Mark::TK);
         case '>':
             if (readch('=', is)) return ge;
-            else return std::make_shared<Token>(Mark::GT);
+            else return make_token(">", Mark::TK);
     }
-    return EXIT_SUCCESS;
+    if (isdigit(peek)) {
+        int ival = 0;
+        do {
+            ival = 10 * ival + (peek - '0'); readch(is);
+        } while (isdigit(peek));
+        if (peek != '.') return make_token(ival);
+        double dval = ival, base = 10.0; 
+        for ( ; ; ) {
+            readch(is);
+            if (!isdigit(peek)) break;
+            dval = dval + (peek - '0') / base; 
+            base *= 10.0;
+        }
+        return make_token(dval);
+    }
+    if (isalpha(peek) || peek == '_') {
+        std::string str;
+        do {
+            str += peek; readch(is);
+        } while (isalpha(peek) || isdigit(peek) || peek == '_');
+        auto iter = words->find(str);
+        if (iter != words->end()) return iter->second;
+        auto id = make_token(str, Mark::ID);
+        (*words)[str] = id;
+        return id;
+    }
+    char ch = peek; peek = ' ';
+    return make_token(std::string(1, ch), Mark::TK);
 }
 
 /* Class Scanner's private member functions. */
 void Scanner::readch(std::istream &is) {
-    peek = is.peek();
+    peek = is.get();
 }
 
 bool Scanner::readch(char ch, std::istream &is) {

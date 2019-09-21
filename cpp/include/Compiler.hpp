@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 
 enum class Mark {
     /* Data type */
@@ -22,7 +23,9 @@ enum class Mark {
     /* Value symbol */
     ID, CINT, CBOOL, CCHAR, CREAL, CSTR, TRUE, FALSE, TEMP,
     /* Control symbol */
-    UNKNOWN, ERROR, NONE, ENDFILE
+    UNKNOWN, ERROR, NONE, ENDFILE,
+    /* The token which is to be determined. */
+    TK
 };
 
 class Token;
@@ -31,7 +34,18 @@ extern std::ostream &operator<<(std::ostream &, const Token &);
 extern bool numeric(const Token&);
 extern Token max(const Token&, const Token&);
 
+extern std::shared_ptr<Token> make_token(Mark);
+extern std::shared_ptr<Token> make_token(int);
+extern std::shared_ptr<Token> make_token(bool);
+extern std::shared_ptr<Token> make_token(char);
+extern std::shared_ptr<Token> make_token(double);
+extern std::shared_ptr<Token> make_token(std::string);
+extern std::shared_ptr<Token> make_token(std::string, Mark);
+extern std::shared_ptr<Token> make_token(std::string, Mark, int);
+
 class Token {
+friend std::ostream &operator<<(std::ostream &, const Token &);
+
 public:
     /* Constructor of Token. */
     Token(Mark mark) : mark(mark), width(0), ival(0) { }

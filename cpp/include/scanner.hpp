@@ -44,7 +44,7 @@ public:
     }
 
     // TODO Set the default parameters' value.
-    std::shared_ptr<Token> scan(std::istream &is, std::ostream &os);
+    std::shared_ptr<Token> scan(std::istream &is);
 
 private:
     void readch(std::istream &);

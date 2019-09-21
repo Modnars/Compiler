@@ -5,6 +5,38 @@
 
 #include "Compiler.hpp"
 
+std::shared_ptr<Token> make_token(Mark mk) {
+    return std::make_shared<Token>(mk);
+}
+
+std::shared_ptr<Token> make_token(int ival) {
+    return std::make_shared<Token>(ival);
+}
+
+std::shared_ptr<Token> make_token(bool bval) {
+    return std::make_shared<Token>(bval);
+}
+
+std::shared_ptr<Token> make_token(char cval) {
+    return std::make_shared<Token>(cval);
+}
+
+std::shared_ptr<Token> make_token(double dval) {
+    return std::make_shared<Token>(dval);
+}
+
+std::shared_ptr<Token> make_token(std::string sval) {
+    return std::make_shared<Token>(sval);
+}
+
+std::shared_ptr<Token> make_token(std::string s, Mark m) {
+    return std::make_shared<Token>(s, m);
+}
+
+std::shared_ptr<Token> make_token(std::string s, Mark m, int w) {
+    return std::make_shared<Token>(s, m, w);
+}
+
 /* Definition of class Token. */
 /**
  * The Assign-Constructor of class Token.
@@ -79,6 +111,8 @@ bool Token::isLexeme() const {
         case Mark::WHILE:
         case Mark::DO   :
         case Mark::BREAK:
+        case Mark::ID   :
+        case Mark::TK   :
             return true;
         default:
             break;
@@ -101,9 +135,24 @@ void Token::copyUnion(const Token &tk) {
 
 /* Overload the operator '<<' to format the output Token. */
 std::ostream &operator<<(std::ostream &os, const Token &tk) {
-    os << "TokenNo." << (int)tk.getMark();
+    Mark mk = tk.getMark();
+    os << "TokenNo." << (int)mk;
+    switch (mk) {
+        case Mark::CINT:
+            os << "\tValue: " << tk.ival; break;
+        case Mark::CBOOL:
+            os << "\tValue: " << (tk.bval ? "true" : "false"); break;
+        case Mark::CCHAR:
+            os << "\tValue: " << tk.cval; break;
+        case Mark::CREAL:
+            os << "\tValue: " << tk.dval; break;
+        case Mark::CSTR:
+            os << "\tValue: " << tk.sval; break;
+        default:
+            break;
+    }
     if (tk.isLexeme()) 
-        os << "\tLexeme:" << tk.getLexeme();
+        os << "\tLexeme: " << tk.getLexeme();
     return os;
 }
 
