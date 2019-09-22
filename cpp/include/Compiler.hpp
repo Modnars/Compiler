@@ -56,10 +56,12 @@ public:
     Token(double dval)      : mark(Mark::CREAL), width(0), dval(dval) { }
     Token(std::string sval) : mark(Mark::CSTR),  width(0), sval(sval) { }
 
-    // TODO Add the checkRep for the below two constructors! In case of destructor 
-    // could not recovery the memory!
-    Token(std::string lexeme, Mark mark) : mark(mark), width(0), lexeme(lexeme) { }
-    Token(std::string s, Mark m, int w): mark(m), width(w), lexeme(s) { }
+    Token(std::string lexeme, Mark mark) : mark(mark), width(0), lexeme(lexeme) { 
+        checkRep();
+    }
+    Token(std::string s, Mark m, int w): mark(m), width(w), lexeme(s) { 
+        checkRep();
+    }
 
     /* Copy Constructor. */
     Token(const Token &tk) : mark(tk.mark), width(tk.width) { copyUnion(tk); }
@@ -87,6 +89,9 @@ private:
         std::string lexeme;
     };
     void copyUnion(const Token&);
+    // Add the checkRep for the below two constructors! In case of destructor 
+    // could not recovery the memory!
+    void checkRep();
 };
 
 #endif /* __COMPILER_HPP */

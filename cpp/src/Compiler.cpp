@@ -3,6 +3,8 @@
 // Date   : 2019-09-20
 // Copyright (C) 2019 Modnar. All rights reserved.
 
+#include <cstdlib>
+
 #include "Compiler.hpp"
 
 std::shared_ptr<Token> make_token(Mark mk) {
@@ -92,8 +94,8 @@ int Token::getWidth() const {
  */
 bool Token::isLexeme() const {
     switch (mark) {
-        case Mark::AND  :
-        case Mark::OR   :
+        case Mark::LAND :
+        case Mark::LOR  :
         case Mark::EQ   :
         case Mark::NE   :
         case Mark::LE   :
@@ -131,6 +133,14 @@ void Token::copyUnion(const Token &tk) {
         default: break;
     }
     if (tk.isLexeme()) new(&lexeme) std::string(tk.lexeme);
+}
+
+void Token::checkRep() {
+    if (!isLexeme()) {
+        std::cerr << "Failed to create a lexeme token whose mark is illegal." 
+                  << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 /* Overload the operator '<<' to format the output Token. */

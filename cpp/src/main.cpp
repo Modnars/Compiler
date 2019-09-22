@@ -87,9 +87,9 @@ int test_for_scanner_scan() {
 }
 
 int main(int argc, const char *argv[]) {
-    //test_for_token_output();
-    //test_for_token_value();
-    //test_for_scanner_constructor();
+    test_for_token_output();
+    test_for_token_value();
+    test_for_scanner_constructor();
     test_for_scanner_scan();
     return EXIT_SUCCESS;
 }
