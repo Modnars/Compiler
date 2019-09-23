@@ -7,9 +7,7 @@
 #include "BasicFunc.hpp"
 #include "Item.hpp"
 
-#include "scanner.hpp"
 #include "parser.hpp"
-#include "translator.hpp"
 
 using std::string;
 using std::vector;
