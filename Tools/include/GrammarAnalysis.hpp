@@ -1,10 +1,10 @@
-// Name   : GrammerAnalysis.hpp
+// Name   : GrammarAnalysis.hpp
 // Author : Modnar
 // Date   : 2019-09-23
 // Copyright (C) 2019 Modnar. All rights reserved.
 
-#ifndef __GRAMMER_ANALYSIS_HPP
-#define __GRAMMER_ANALYSIS_HPP
+#ifndef __GRAMMAR_ANALYSIS_HPP
+#define __GRAMMAR_ANALYSIS_HPP
 
 #include <iostream>
 #include <vector>
@@ -42,4 +42,4 @@ private:
     static std::string _null;
 };
 
-#endif /* __GRAMMA_ANALYSIS_HPP */
+#endif /* __GRAMMAR_ANALYSIS_HPP */

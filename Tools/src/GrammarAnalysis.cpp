@@ -1,4 +1,4 @@
-#include "GrammerAnalysis.hpp"
+#include "GrammarAnalysis.hpp"
 
 std::ostream &operator<<(std::ostream &os, const Production &p) {
     os << p.left << " -> ";

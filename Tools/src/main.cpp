@@ -6,8 +6,8 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "GrammerAnalysis.hpp"
-#include "GrammerParser.hpp"
+#include "GrammarAnalysis.hpp"
+#include "GrammarParser.hpp"
 
 int main(int argc, const char *argv[]) {
     std::vector<std::string> rights;
@@ -18,6 +18,6 @@ int main(int argc, const char *argv[]) {
     std::cout << p << std::endl;
     rights.push_back("4");
     std::cout << p << std::endl;
-    read_grammer("hello");
+    read_grammar("hello");
     return EXIT_SUCCESS;
 }

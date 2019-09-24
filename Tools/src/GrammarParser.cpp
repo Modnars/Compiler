@@ -1,10 +1,10 @@
-// Name   : GrammerParser.cpp
+// Name   : GrammarParser.cpp
 // Author : Modnar
 // Date   : 2019-09-23
 // Copyright (C) 2019 Modnar. All rights reserved.
 
-#include "GrammerAnalysis.hpp"
-#include "GrammerParser.hpp"
+#include "GrammarAnalysis.hpp"
+#include "GrammarParser.hpp"
 
 #include <fstream>
 #include <cstdio>
@@ -39,7 +39,7 @@ std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
 // Read the grammar from file.
 // The function could generate the TerminalSet and NonTerminalSet.
 // The TerminalSet generated will contains '$', which is used to compute FirstSet.
-int read_grammer(const std::string &filename) {
+int read_grammar(const std::string &filename) {
     std::ifstream is(filename);
     if (!is) {
         printf("%s", RED);
