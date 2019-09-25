@@ -15,13 +15,6 @@
 #include <map>
 #include <set>
 
-const char *NONE    = "\e[0m";
-const char *BLUE    = "\e[0;34m";
-const char *GREEN   = "\e[0;32m";
-const char *RED     = "\e[0;31m";
-const char *WHITE   = "\e[1;37m";
-const char *YELLOW  = "\e[1;33m";
-
 std::vector<std::shared_ptr<Production>> ProdVec; // Store the Production sequence.
 std::set<std::string> NonTerminalSet;             // Store the non-terminal symbols.
 std::set<std::string> TerminalSet;                // Store the terminal symbols.
@@ -42,9 +35,9 @@ std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
 int read_grammar(const std::string &filename) {
     std::ifstream is(filename);
     if (!is) {
-        printf("%s", RED);
+        std::cout << RED;
         std::cerr << "Failed to open file '" << filename << "'." << std::endl;
-        printf("%s", NONE);
+        std::cout << NONE;
         return EXIT_FAILURE;
     }
     std::string line;

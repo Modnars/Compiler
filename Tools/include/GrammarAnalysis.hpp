@@ -11,6 +11,13 @@
 #include <string>
 #include <set>
 
+extern const std::string NONE;
+extern const std::string BLUE;
+extern const std::string GREEN;
+extern const std::string RED;
+extern const std::string WHITE;
+extern const std::string YELLOW;
+
 class Production;
 class Item;
 

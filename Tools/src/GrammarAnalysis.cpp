@@ -1,5 +1,12 @@
 #include "GrammarAnalysis.hpp"
 
+const std::string NONE    = "\e[0m";
+const std::string BLUE    = "\e[0;34m";
+const std::string GREEN   = "\e[0;32m";
+const std::string RED     = "\e[0;31m";
+const std::string WHITE   = "\e[1;37m";
+const std::string YELLOW  = "\e[1;33m";
+
 std::ostream &operator<<(std::ostream &os, const Production &p) {
     os << p.left << " -> ";
     for (auto right : p.rights) {
