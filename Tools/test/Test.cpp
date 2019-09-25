@@ -11,8 +11,12 @@
 
 namespace Test {
     void test_for_parser() {
-        std::cout << RED;
+        RED = "Hello";
         printf("Test\n");
         std::cout << NONE;
+    }
+
+    void test_all() {
+        test_for_parser();
     }
 }

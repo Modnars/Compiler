@@ -36,7 +36,7 @@ extern std::ostream &operator<<(std::ostream &, const Production &);
 class Production {
 public:
     Production(const std::string &left, const std::vector<std::string> &rights) :
-            left(left), rights(rights) { }
+        left(left), rights(rights) { }
 
     const std::string left;
     const std::vector<std::string> rights;
@@ -47,6 +47,32 @@ public:
 
 private:
     static std::string _null;
+};
+
+class Item {
+public:
+    const std::string left;
+    const std::vector<std::string> rights;
+    const std::string search;
+
+    Item(const std::string &left, const std::vector<std::string> &rights) :
+        left(left), rights(rights), search("") { }
+    Item(const std::string &left, const std::vector<std::string> &rights, 
+            const std::string &search) :
+        left(left), rights(rights), search(search) { }
+
+    bool could_reduce() const ;
+    bool is_reduced_by(const Production &) const ;
+    std::size_t pos() const ;
+    std::string nxsb() const ; // Get the status (dot) next symbol.
+    Item shift() const ;
+
+    // Set and get the class Item's status mark symbol, whose default value is "@".
+    static void setMark(const std::string &);
+    static std::string mark();
+
+private:
+    static std::string _mark;
 };
 
 #endif /* __GRAMMAR_ANALYSIS_HPP */
