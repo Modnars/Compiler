@@ -19,5 +19,7 @@ int main(int argc, const char *argv[]) {
     rights.push_back("4");
     std::cout << p << std::endl;
     read_grammar("hello");
+    rights.push_back("@");
+    Item item("left", rights);
     return EXIT_SUCCESS;
 }

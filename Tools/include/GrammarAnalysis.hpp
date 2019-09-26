@@ -18,20 +18,22 @@ extern const std::string RED;
 extern const std::string WHITE;
 extern const std::string YELLOW;
 
-class Production;
-class Item;
-
 extern std::vector<std::string> split(const std::string &, const std::string &);
 extern std::string &trim(std::string &);
 
-template <typename T>
-extern bool contains(std::set<T> &set, const T &value) {
-    if (set.empty())
-        return false;
-    return set.find(value) != set.end();
-}
+class Production;
+class Item;
 
 extern std::ostream &operator<<(std::ostream &, const Production &);
+extern std::ostream &operator<<(std::ostream &, const Item &);
+extern bool operator<(const Item &a, const Item &b);
+extern bool operator==(const Item &a, const Item &b);
+
+template <typename T>
+extern bool contains(std::set<T> &set, const T &value) {
+    if (set.empty()) return false;
+    return set.find(value) != set.end();
+}
 
 class Production {
 public:
@@ -56,10 +58,10 @@ public:
     const std::string search;
 
     Item(const std::string &left, const std::vector<std::string> &rights) :
-        left(left), rights(rights), search("") { }
+        left(left), rights(rights), search("") { checkRep(); }
     Item(const std::string &left, const std::vector<std::string> &rights, 
             const std::string &search) :
-        left(left), rights(rights), search(search) { }
+        left(left), rights(rights), search(search) { checkRep(); }
 
     bool could_reduce() const ;
     bool is_reduced_by(const Production &) const ;
@@ -73,6 +75,8 @@ public:
 
 private:
     static std::string _mark;
+    std::size_t _pos = 0; // Store the item's dot mark's position.
+    void checkRep();
 };
 
 #endif /* __GRAMMAR_ANALYSIS_HPP */

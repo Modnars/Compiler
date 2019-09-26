@@ -1,3 +1,10 @@
+// Name   : GrammarAnalysis.cpp
+// Author : Mondar
+// Date   : 2019-09-23
+// Copyright (C) 2019 Modnar. All rights reserved.
+
+#include <cstdlib>
+
 #include "GrammarAnalysis.hpp"
 
 const std::string NONE    = "\e[0m";
@@ -6,14 +13,6 @@ const std::string GREEN   = "\e[0;32m";
 const std::string RED     = "\e[0;31m";
 const std::string WHITE   = "\e[1;37m";
 const std::string YELLOW  = "\e[1;33m";
-
-std::ostream &operator<<(std::ostream &os, const Production &p) {
-    os << p.left << " -> ";
-    for (auto right : p.rights) {
-        os << right << " ";
-    }
-    return os;
-}
 
 std::vector<std::string> split(const std::string &str, const std::string &delim) { 
     std::vector<std::string> res;
@@ -36,6 +35,37 @@ std::string &trim(std::string &s) {
     s.erase(0, s.find_first_not_of(" "));
     s.erase(s.find_last_not_of(" ") + 1);
     return s;
+}
+
+std::ostream &operator<<(std::ostream &os, const Production &p) {
+    os << p.left << " -> ";
+    for (auto right : p.rights) {
+        os << right << " ";
+    }
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const Item &it) {
+    os << it.left << " -> ";
+    for (auto var : it.rights)
+        os << var << " ";
+    if (it.search != "")
+        os << "Search: " << it.search;
+    return os;
+}
+
+bool operator<(const Item &a, const Item &b) {
+    if (a.left < b.left)
+        return true;
+    else if (a.left == b.left && a.rights < b.rights)
+        return true;
+    else if (a.left == b.left && a.rights == b.rights && a.search < b.search)
+        return true;
+    return false;
+}
+
+bool operator==(const Item &a, const Item &b) {
+    return (a.left == b.left) && (a.rights == b.rights) && (a.search == b.search);
 }
 
 /* Class Production's implementation. */
@@ -91,10 +121,7 @@ bool Item::is_reduced_by(const Production &p) const {
 // Warning: the function is different from HIT-Compiler-Experiment. If could not 
 //          find the mark, return rights.size();
 std::size_t Item::pos() const {
-    std::size_t i;
-    for (i = 0; i < rights.size(); ++i)
-        if (rights[i] == _mark) break;
-    return i;
+    return _pos;
 }
 
 /**
@@ -103,9 +130,7 @@ std::size_t Item::pos() const {
  */
 std::string Item::nxsb() const { 
     if (could_reduce()) return "";
-    for (std::size_t i = 0; i < rights.size(); ++i)
-        if (rights[i] == _mark) return rights[i+1];
-    return "";
+    return rights[_pos+1];
 }
 
 /**
@@ -114,11 +139,12 @@ std::string Item::nxsb() const {
  */
 Item Item::shift() const {
     auto tmp = rights;
-    for (std::size_t i = 0; i < tmp.size(); ++i)
-        if (tmp[i] == _mark) {
-            std::swap(tmp[i], tmp[i+1]);
-            break;
-        }
+    std::swap(tmp[_pos], tmp[_pos+1]);
+//    for (std::size_t i = 0; i < tmp.size(); ++i)
+//        if (tmp[i] == _mark) {
+//            std::swap(tmp[i], tmp[i+1]);
+//            break;
+//        }
     return Item(left, tmp, search);
 }
 
@@ -140,3 +166,14 @@ std::string Item::mark() {
 
 /* Initialize the Item's dot contents with "@" */
 std::string Item::_mark = "@";
+
+void Item::checkRep() {
+    std::size_t i;
+    for (i = 0; i < rights.size(); ++i) 
+        if (rights[i] == _mark) break;
+    if (i == rights.size()) {
+        std::cerr << RED << "Failed to construct Item object." << NONE << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    _pos = i;
+}

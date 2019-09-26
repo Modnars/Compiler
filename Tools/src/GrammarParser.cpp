@@ -21,7 +21,7 @@ std::set<std::string> TerminalSet;                // Store the terminal symbols.
 
 // Store the First Set.
 std::map<std::string, std::shared_ptr<std::vector<std::string>>> FirstSet;  
-// std::vector<std::set<Item>> ClosureSet; // Store the Closures' set.
+std::vector<std::set<Item>> ClosureSet; // Store the Closures' set.
 
 // Store the Action information of Reduce, Shift and Goto.
 std::map<int, std::shared_ptr<std::map<std::string, int>>> ActionTable;
@@ -35,9 +35,8 @@ std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
 int read_grammar(const std::string &filename) {
     std::ifstream is(filename);
     if (!is) {
-        std::cout << RED;
-        std::cerr << "Failed to open file '" << filename << "'." << std::endl;
-        std::cout << NONE;
+        std::cerr << RED << "Failed to open file '" << filename << "'." << NONE 
+                  << std::endl;
         return EXIT_FAILURE;
     }
     std::string line;
