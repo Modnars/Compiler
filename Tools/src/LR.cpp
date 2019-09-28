@@ -384,3 +384,9 @@ void print_GotoTable(std::ostream &os) {
         }
     }
 }
+
+namespace LR {
+    void analysis(std::ostream &os) {
+        os << "OK" << std::endl;
+    }
+}

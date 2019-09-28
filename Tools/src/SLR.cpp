@@ -424,3 +424,9 @@ void print_GotoTable(std::ostream &os) {
         }
     }
 }
+
+namespace SLR {
+    void analysis(std::ostream &os = std::cout) {
+        os << "FINE" << std::endl;
+    }
+}
