@@ -15,7 +15,7 @@
 #include <map>
 #include <set>
 
-std::vector<std::shared_ptr<Production>> ProdVec; // Store the Production sequence.
+// std::vector<std::shared_ptr<Production>> ProdVec; // Store the Production sequence.
 std::set<std::string> NonTerminalSet;             // Store the non-terminal symbols.
 std::set<std::string> TerminalSet;                // Store the terminal symbols.
 
@@ -32,29 +32,30 @@ std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
 // Read the grammar from file.
 // The function could generate the TerminalSet and NonTerminalSet.
 // The TerminalSet generated will contains '$', which is used to compute FirstSet.
-int read_grammar(const std::string &filename) {
+std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filename) {
+    std::vector<std::shared_ptr<Production>> prodVec;
     std::ifstream is(filename);
     if (!is) {
         std::cerr << RED << "Failed to open file '" << filename << "'." << NONE 
                   << std::endl;
-        return EXIT_FAILURE;
+        return prodVec;
     }
     std::string line;
     while (getline(is, line)) {
-        auto tmp_vec = split(line, "->");
-        std::string left = trim(tmp_vec[0]);
-        if (!contains(NonTerminalSet, left))
-            NonTerminalSet.insert(left);
+        auto tmpVec = split(line, "->");
+        std::string left = trim(tmpVec[0]);
         std::vector<std::string> rights;
-        tmp_vec = split(trim(tmp_vec[1]), " ");
-        for (int i = 0; i < tmp_vec.size(); ++i)
-            rights.push_back(trim(tmp_vec[i]));
-        ProdVec.push_back(std::make_shared<Production>(left, rights));
+//        if (!contains(NonTerminalSet, left))
+//            NonTerminalSet.insert(left);
+        tmpVec = split(trim(tmpVec[1]), " ");
+        for (int i = 0; i < tmpVec.size(); ++i)
+            rights.push_back(trim(tmpVec[i]));
+        prodVec.push_back(std::make_shared<Production>(left, rights));
     }
     is.close();
-    for (auto p : ProdVec) 
-        for (auto sym : p->rights) 
-            if (!contains(NonTerminalSet, sym)) 
-                TerminalSet.insert(sym);
-    return EXIT_SUCCESS;
+//    for (auto p : ProdVec) 
+//        for (auto sym : p->rights) 
+//            if (!contains(NonTerminalSet, sym)) 
+//                TerminalSet.insert(sym);
+    return prodVec;
 }

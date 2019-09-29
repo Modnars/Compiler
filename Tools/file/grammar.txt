@@ -1,0 +1,52 @@
+Program -> P
+P -> D P
+P -> S P
+P -> $
+D -> proc X id ( M ) { P }
+D -> T id A ;
+D -> record id { P }
+A -> = F A 
+A -> , id A
+A -> $
+M -> M , X id
+M -> X id
+M -> $
+T -> X C
+X -> int
+X -> float
+C -> [ CINT ] C
+C -> $
+S -> L = E ;
+S -> if B { W S N } R  
+R -> else { W S }
+R -> $
+S -> while W B { W S }
+S -> call id ( Elist ) ;
+S -> return E ;
+L -> L [ CINT ] 
+L -> id
+E -> E + G
+E -> G
+G -> G * F
+G -> F
+F -> ( E ) 
+F -> CINT
+F -> id
+B -> ( B || Q B )
+B -> ( B && Q B )
+B -> ! B
+B -> ( B )
+B -> E relop E
+B -> CBOOL
+relop -> <
+relop -> <=
+relop -> >
+relop -> >=
+relop -> ==
+relop -> !=
+Elist -> Elist , E
+Elist -> E
+Q -> $
+W -> $
+N -> $
+F -> CFLOAT

@@ -9,7 +9,7 @@ PROGRAM     =result
 DEBUGER     =lldb
 
 t : 
-	g++ -std=c++11 -Wall -I ../include/ GrammarAnalysis.cpp GrammarParser.cpp main.cpp
+	g++ -std=c++11 -Wall -I ../include/ GrammarAnalysis.cpp GrammarParser.cpp SLR.cpp main.cpp
 
 all : $(PROGRAM)
 	echo "Helel"

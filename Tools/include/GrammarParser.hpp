@@ -8,14 +8,19 @@
 
 #include <string>
 
-extern int read_grammar(const std::string &filename);
+#include "GrammarAnalysis.hpp"
+
+// extern int read_grammar(const std::string &filename);
+extern std::vector<std::shared_ptr<Production>> read_grammar(const std::string &f);
 
 namespace LR {
-    extern void analysis(std::ostream &os = std::cout);
+    extern void analysis(const std::vector<std::shared_ptr<Production>> &prods, 
+            std::ostream &os = std::cout);
 }
 
 namespace SLR {
-    extern void analysis(std::ostream &os = std::cout);
+    extern void analysis(const std::vector<std::shared_ptr<Production>> &prods, 
+            std::ostream &os = std::cout);
 }
 
 #endif /* __GRAMMAR_PARSER_HPP */

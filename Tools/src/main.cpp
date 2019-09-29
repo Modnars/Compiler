@@ -9,17 +9,11 @@
 #include "GrammarAnalysis.hpp"
 #include "GrammarParser.hpp"
 
+void test_for_read_grammar() {
+    SLR::analysis(read_grammar("../file/grammar.txt"));
+}
+
 int main(int argc, const char *argv[]) {
-    std::vector<std::string> rights;
-    rights.push_back("1");
-    rights.push_back("2");
-    rights.push_back("3");
-    Production p("left", rights);
-    std::cout << p << std::endl;
-    rights.push_back("4");
-    std::cout << p << std::endl;
-    read_grammar("hello");
-    rights.push_back("@");
-    Item item("left", rights);
+    test_for_read_grammar();
     return EXIT_SUCCESS;
 }

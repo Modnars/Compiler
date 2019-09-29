@@ -82,6 +82,7 @@ int test_for_scanner_scan() {
     while (is) {
         std::cout << *scanner.scan(is) << std::endl;
     }
+    is.close();
     set_exit_test_color();
     return EXIT_SUCCESS;
 }
