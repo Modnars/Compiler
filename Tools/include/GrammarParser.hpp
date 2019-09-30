@@ -14,12 +14,12 @@
 extern std::vector<std::shared_ptr<Production>> read_grammar(const std::string &f);
 
 namespace LR {
-    extern void analysis(const std::vector<std::shared_ptr<Production>> &prods, 
+    extern void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
 
 namespace SLR {
-    extern void analysis(const std::vector<std::shared_ptr<Production>> &prods, 
+    extern void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
 

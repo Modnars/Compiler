@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 #include <set>
 
 extern const std::string NONE;
@@ -33,6 +34,21 @@ template <typename T>
 extern bool contains(std::set<T> &set, const T &value) {
     if (set.empty()) return false;
     return set.find(value) != set.end();
+}
+
+template <typename T>
+extern bool contains(const std::vector<T> &vec, const T &val) {
+    if (vec.empty())
+        return false;
+    for (auto var : vec)
+        if (var == val)
+            return true;
+    return false;
+}
+
+template <typename K, typename T>
+extern bool contains(const std::map<K, T> &map, const K &val) {
+    return map.find(val) != map.end();
 }
 
 class Production {

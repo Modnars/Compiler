@@ -10,7 +10,7 @@
 #include "GrammarParser.hpp"
 
 void test_for_read_grammar() {
-    SLR::analysis(read_grammar("../file/grammar.txt"));
+    SLR::analyze(read_grammar("../file/grammar.txt"));
 }
 
 int main(int argc, const char *argv[]) {

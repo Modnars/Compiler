@@ -45,17 +45,11 @@ std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filenam
         auto tmpVec = split(line, "->");
         std::string left = trim(tmpVec[0]);
         std::vector<std::string> rights;
-//        if (!contains(NonTerminalSet, left))
-//            NonTerminalSet.insert(left);
         tmpVec = split(trim(tmpVec[1]), " ");
         for (int i = 0; i < tmpVec.size(); ++i)
             rights.push_back(trim(tmpVec[i]));
         prodVec.push_back(std::make_shared<Production>(left, rights));
     }
     is.close();
-//    for (auto p : ProdVec) 
-//        for (auto sym : p->rights) 
-//            if (!contains(NonTerminalSet, sym)) 
-//                TerminalSet.insert(sym);
     return prodVec;
 }
