@@ -35,21 +35,6 @@ namespace {
 }
 
 namespace SLR {
-    void initialize(const std::vector<std::shared_ptr<Production>> &prods) {
-        ProdVec = prods;
-//        for (std::size_t i = 0; i < ProdVec.size(); ++i) {
-//            if (i > 10) break;
-//            std::cout << ProdVec[i] << " " << prods[i] << std::endl;
-//        }
-        for (auto prod : ProdVec)
-            if (!contains(NonTerminalSet, prod->left)) 
-                NonTerminalSet.insert(prod->left);
-        for (auto prod : ProdVec)
-            for (auto right : prod->rights)
-                if (!contains(NonTerminalSet, right))
-                    TerminalSet.insert(right);
-    }
-
     // Judge whether the production could be null directly.
     bool could_be_null(const std::string &prod) {
         for (auto pptr : ProdVec) 
@@ -90,10 +75,9 @@ namespace SLR {
 
     // Get the FOLLOW Set of the grammar.
     void getFollowSet() {
-        getFirstSet();
         for (auto var : NonTerminalSet) 
             FollowSet[var] = std::make_shared<std::vector<std::string>>();
-        FollowSet["S"]->push_back("#");
+        FollowSet["Program"]->push_back("#");
         bool flag, fab;
         while (true) {
             flag = true;
@@ -138,14 +122,161 @@ namespace SLR {
         } /* while (true) */
     }
 
+    void initialize(const std::vector<std::shared_ptr<Production>> &prods) {
+        ProdVec = prods;
+//        for (std::size_t i = 0; i < ProdVec.size(); ++i) {
+//            if (i > 10) break;
+//            std::cout << ProdVec[i] << " " << prods[i] << std::endl;
+//        }
+        for (auto prod : ProdVec)
+            if (!contains(NonTerminalSet, prod->left)) 
+                NonTerminalSet.insert(prod->left);
+        for (auto prod : ProdVec)
+            for (auto right : prod->rights)
+                if (!contains(NonTerminalSet, right))
+                    TerminalSet.insert(right);
+        getFirstSet();
+        getFollowSet();
+    }
+
+    void extend(std::vector<Item> &closure) {
+        std::vector<std::string> rights;
+        std::string left;
+        for (size_t i = 0; i < closure.size(); ++i) {
+            for (auto pptr : ProdVec) {
+                if ((left = pptr->left) == closure[i].nxsb()) {
+                    rights = {Item::mark()};
+                    for (auto var : pptr->rights) 
+                        rights.push_back(var);
+                    auto new_item = Item(left, rights);
+                    if (!contains(closure, new_item))
+                        closure.push_back(new_item);
+                }
+            } 
+        }
+    }
+
+    void getI0() {
+        std::vector<std::string> rights = {Item::mark()};
+        for (auto var : ProdVec[0]->rights)
+            rights.push_back(var);
+        std::vector<Item> closure = {Item(ProdVec[0]->left, rights)};
+        std::string left;
+        for (size_t i = 0; i < closure.size(); ++i) {
+            for (auto pptr : ProdVec) {
+                if ((left = pptr->left) == closure[i].nxsb()) {
+                    rights = {Item::mark()};
+                    for (auto var : pptr->rights) 
+                        rights.push_back(var);
+                    auto new_item = Item(left, rights);
+                    if (!contains(closure, new_item))
+                        closure.push_back(new_item);
+                }
+            } 
+        }
+        ClosureSet.push_back(closure);
+    }
+
+    // Get all the closures.
+    void getClosureSet(std::ostream &os = std::cout) {
+        getI0();
+        std::vector<Item> closure;
+        std::vector<std::string> tmpVec, rights; // Store the temp next symbol.
+        for (int i = 0; i < ClosureSet.size(); ++i) {
+            tmpVec.clear();
+            for (auto item : ClosureSet[i]) {
+                if (!item.could_reduce() && !contains(tmpVec, item.nxsb()))
+                    tmpVec.push_back(item.nxsb());
+            }
+            for (auto sym : tmpVec) {
+                closure.clear();
+                for (auto item : ClosureSet[i]) {
+                    if (!item.could_reduce() && item.nxsb() == sym) {
+                        closure.push_back(item.shift());
+                    }
+                }
+                extend(closure);
+                bool found = false; // Mark whether find the closure from before closures.
+                for (int j = 0; j < ClosureSet.size(); ++j) {
+                    if (ClosureSet[j] == closure) {
+                        // Use new data structure. Here...
+                        if (!contains(ActionTable, i)) {
+                            ActionTable[i] = std::make_shared<std::map<std::string, int>>();
+                            (*ActionTable[i])[sym] = j;
+                        } else {
+                            if (!contains(*ActionTable[i], sym)) {
+                                (*ActionTable[i])[sym] = j;
+                            } else {
+                                for (auto item : closure) 
+                                    os << item << std::endl;
+                                os << "Error! [1] The Gramma fill the ActionTable repeatly!" << std::endl;
+                            }
+                        } // ... Done
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    ClosureSet.push_back(closure);
+                    // Use new data structure. Here...
+                    if (!contains(ActionTable, i)) {
+                        ActionTable[i] = std::make_shared<std::map<std::string, int>>();
+                        (*ActionTable[i])[sym] = ClosureSet.size()-1;
+                    } else {
+                        if (!contains(*ActionTable[i], sym)) {
+                            (*ActionTable[i])[sym] = ClosureSet.size()-1;
+                        } else {
+                            os << "Error! [2] The Gramma fill the ActionTable repeatly!" << std::endl;
+                        }
+                    } // ... Done
+                }
+            }
+        }
+    }
+
+    // Fill the ReduceTable when has gotten all the closures.
+    // This function is also the key to judge whether the grammar is SLR(1) grammar.
+    void fillReduceAction(std::ostream &os = std::cout) {
+        int base = ClosureSet.size();
+        for (int i = 0; i < ClosureSet.size(); ++i) {
+            for (auto item : ClosureSet[i]) {
+                if (item.could_reduce()) {
+                    for (int j = 0; j < ProdVec.size(); ++j) {
+                        if (item.is_reduced_by(*ProdVec[j])) {
+                            for (auto sym : *FollowSet[item.left]) {
+                                if (!contains(ActionTable, i)) {
+                                    ActionTable[i] = std::make_shared<std::map<std::string, int>>();
+                                    (*ActionTable[i])[sym] = base + j;
+                                } else {
+                                    if (!contains(*ActionTable[i], sym)) {
+                                        (*ActionTable[i])[sym] = base + j;
+                                    } else if ((*ActionTable[i])[sym] != base+j) {
+                                        os << "\nError! [3] The Gramma fill the ActionTable repeatly!" << std::endl;
+                                        os << "Production: " << *ProdVec[j] << std::endl;
+                                        os << "Pos: " << i << ", " << item.search << std::endl;
+                                        os << "Have Existed: " << (*ActionTable[i])[item.search] << std::endl;
+                                    }
+                                        
+                                }
+                            }
+                            break;
+                        }
+                    } /* for (size_t j = 0; ...) loop */
+                } /* if (item.could_reduce()) */
+            } /* for (auto item : ...) loop */
+        } /* for (size_t i = 0; ...) loop */
+    }
+
     void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os) {
         initialize(prods);
-        for (auto prod: ProdVec)
-            std::cout << *prod << std::endl;
-        for (auto sym : NonTerminalSet)
-            std::cout << sym << std::endl;
-        for (auto sym : TerminalSet)
-            std::cout << sym << std::endl;
+        getClosureSet();
+        fillReduceAction();
+//        for (auto prod: ProdVec)
+//            std::cout << *prod << std::endl;
+//        for (auto sym : NonTerminalSet)
+//            std::cout << sym << std::endl;
+//        for (auto sym : TerminalSet)
+//            std::cout << sym << std::endl;
     }
 }
