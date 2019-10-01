@@ -77,7 +77,7 @@ namespace SLR {
     void getFollowSet() {
         for (auto var : NonTerminalSet) 
             FollowSet[var] = std::make_shared<std::vector<std::string>>();
-        FollowSet["Program"]->push_back("#");
+        FollowSet[Production::start()]->push_back("#");
         bool flag, fab;
         while (true) {
             flag = true;
@@ -270,13 +270,7 @@ namespace SLR {
     void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os) {
         initialize(prods);
-        getClosureSet();
-        fillReduceAction();
-//        for (auto prod: ProdVec)
-//            std::cout << *prod << std::endl;
-//        for (auto sym : NonTerminalSet)
-//            std::cout << sym << std::endl;
-//        for (auto sym : TerminalSet)
-//            std::cout << sym << std::endl;
+        getClosureSet(os);
+        fillReduceAction(os);
     }
 }

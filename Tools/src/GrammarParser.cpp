@@ -15,7 +15,6 @@
 #include <map>
 #include <set>
 
-// std::vector<std::shared_ptr<Production>> ProdVec; // Store the Production sequence.
 std::set<std::string> NonTerminalSet;             // Store the non-terminal symbols.
 std::set<std::string> TerminalSet;                // Store the terminal symbols.
 
@@ -51,5 +50,6 @@ std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filenam
         prodVec.push_back(std::make_shared<Production>(left, rights));
     }
     is.close();
+    Production::setStart(prodVec[0]->left);
     return prodVec;
 }

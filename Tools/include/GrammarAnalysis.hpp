@@ -62,9 +62,12 @@ public:
     // Set the Production's empty string contents.
     static void setNull(const std::string&);
     static std::string null();
+    static void setStart(const std::string&);
+    static std::string start();
 
 private:
     static std::string _null;
+    static std::string _start;
 };
 
 class Item {

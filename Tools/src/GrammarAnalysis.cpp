@@ -89,6 +89,24 @@ std::string Production::null() {
 /* Initialize the Production's null production contents with "$" */
 std::string Production::_null = "$";
 
+/**
+ * Set the Production's start-production contents.
+ * @param null The start production's expression.
+ */
+void Production::setStart(const std::string &start) {
+    _start = start;
+}
+
+/**
+ * Get the Production's start production contents.
+ * @return the start production's expression.
+ */
+std::string Production::start() {
+    return _start;
+}
+
+/* Initialize the Production's start production contents with "S" */
+std::string Production::_start = "S";
 /* Class Item's implementation. */
 
 /**
