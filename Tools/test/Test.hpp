@@ -3,6 +3,7 @@
 
 namespace Test {
     extern void test_for_parser();
+    extern void test_all();
 }
 
 #endif /* __TEST_HPP */

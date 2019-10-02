@@ -124,10 +124,6 @@ namespace SLR {
 
     void initialize(const std::vector<std::shared_ptr<Production>> &prods) {
         ProdVec = prods;
-//        for (std::size_t i = 0; i < ProdVec.size(); ++i) {
-//            if (i > 10) break;
-//            std::cout << ProdVec[i] << " " << prods[i] << std::endl;
-//        }
         for (auto prod : ProdVec)
             if (!contains(NonTerminalSet, prod->left)) 
                 NonTerminalSet.insert(prod->left);

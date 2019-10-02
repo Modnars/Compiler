@@ -8,6 +8,6 @@
 #include "Test.hpp"
 
 int main(int argc, const char *argv[]) {
-    Test::test_for_parser();
+    Test::test_all();
     return EXIT_SUCCESS;
 }

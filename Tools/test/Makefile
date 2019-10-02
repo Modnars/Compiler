@@ -1,7 +1,7 @@
 CC            =g++
 CFLAGS        =-std=c++11 -I$(HEADFILES_DIR) -Wall
-OBJS          =GrammarAnalysis.o GrammarParser.o Test.o main.o
-SRCS          =../src/GrammarAnalysis.cpp ../src/GrammarParser.cpp Test.cpp main.cpp
+OBJS          =GrammarAnalysis.o GrammarParser.o SLR.o Test.o main.o
+SRCS          =../src/GrammarAnalysis.cpp ../src/GrammarParser.cpp ../src/SLR.cpp Test.cpp main.cpp
 HEADFILES_DIR =../include/
 PROGRAM       =main.out
 
