@@ -22,7 +22,7 @@ namespace Test {
         std::cout << RED << ">>>>>>>>>>   RETURN   <<<<<<<<<<\n" << NONE 
                   << std::endl;
     }
-    
+
     void test_for_parser() {
         set_enter_test_color("Parser");
         printf("Test\n");
