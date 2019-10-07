@@ -23,9 +23,11 @@ namespace Test {
                   << std::endl;
     }
 
-    void test_for_parser() {
-        set_enter_test_color("Parser");
-        printf("Test\n");
+    void test_for_read_grammar() {
+        set_enter_test_color("Read_Grammar");
+        std::string f = "../file/grammar.txt";
+        for (auto pptr : read_grammar(f))
+            std::cout << *pptr << std::endl;
         set_exit_test_color();
     }
 
@@ -40,7 +42,7 @@ namespace Test {
     }
 
     void test_all() {
-        // test_for_parser();
-        test_for_SLR();
+        test_for_read_grammar();
+        // test_for_SLR();
     }
 }

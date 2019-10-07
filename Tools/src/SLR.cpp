@@ -1,4 +1,4 @@
-// Name   : LR.cpp
+// Name   : SLR.cpp
 // Author : Modnar
 // Date   : 2019-09-27
 // Copyright (C) 2019 Modnar. All rights reserved.
@@ -9,7 +9,6 @@
 #include <stack>
 #include <map>
 
-#include "GrammarAnalysis.hpp"
 #include "GrammarParser.hpp"
 
 namespace {
@@ -27,7 +26,7 @@ namespace {
 
     // Store the Closures' set.
     std::vector<std::vector<Item>> ClosureSet; 
-    // Store the Action information of Reduce, Shift and Goto.
+    // Store the Action information of REDUCE, SHIFT and GOTO.
     std::map<int, std::shared_ptr<std::map<std::string, int>>> ActionTable;
     
     std::stack<int> StateStack;  // Store the State Stack information.
@@ -52,7 +51,7 @@ namespace SLR {
         for (auto var : NonTerminalSet) // Initialize the non-terminal symbol's first set.
             FirstSet[var] = std::make_shared<std::vector<std::string>>();
         bool extending = true;
-        while (true) {
+        while (extending) {
             extending = false;
             for (auto pptr : ProdVec) {
                 auto left = pptr->left;
@@ -68,8 +67,6 @@ namespace SLR {
                         break;
                 }
             }
-            if (!extending)
-                break;
         }
     }
 
