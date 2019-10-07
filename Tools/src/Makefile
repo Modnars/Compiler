@@ -1,35 +1,25 @@
 CC          =g++
 CFLAGS      =-std=c++11 -Wall -I ../include/
-PARSER      =parsers
-MAIN        =main
-OBJ         =$(PARSER).o BasicFunc.o Item.o Production.o 
-SRC         =$(PARSER).cpp BasicFunc.cpp Item.cpp Production.cpp
+OBJ         =GrammarAnalysis.o GrammarParser.o SLR.o LR.o main.o
+SRC         =GrammarAnalysis.cpp GrammarParser.cpp SLR.cpp LR.cpp main.cpp
 HEADFILES   =../include/*.hpp
-PROGRAM     =result
+PROGRAM     =main
 DEBUGER     =lldb
 
-t : 
-	g++ -std=c++11 -Wall -I ../include/ GrammarAnalysis.cpp GrammarParser.cpp SLR.cpp LR.cpp main.cpp
+#t : 
+#	g++ -std=c++11 -Wall -I ../include/ GrammarAnalysis.cpp GrammarParser.cpp SLR.cpp LR.cpp main.cpp
 
 all : $(PROGRAM)
-	echo "Helel"
 
-$(PROGRAM) : $(OBJ) $(MAIN).o
-	$(CC) $(CFLAGS) $(OBJ) $(MAIN).o -o $(PROGRAM)
+$(PROGRAM) : $(OBJ) 
+	$(CC) $(CFLAGS) $(OBJ) -o $(PROGRAM).out
 
 $(OBJ) : $(SRC) $(HEADFILES)
 	$(CC) $(CFLAGS) $(SRC) -c
 
-$(MAIN).o : $(MAIN).cpp $(HEADFILES)
-	echo "Helel"
-	$(CC) $(CFLAGS) $(MAIN).cpp -c
-
 d :
-	$(CC) $(CFLAGS) $(SRC) -o $(MAIN).dbg -g
-	$(DEBUGER) $(MAIN).dbg
-
-r : 
-	./$(PROGRAM) -n ../test/test.cpp
+	$(CC) $(CFLAGS) $(SRC) -o $(PROGRAM).dbg -g
+	$(DEBUGER) $(PROGRAM).dbg
 
 clean :
 	rm -rf *.o *.out *.dbg *.dbg.dSYM $(PROGRAM)
