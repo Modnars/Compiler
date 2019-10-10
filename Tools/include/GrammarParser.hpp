@@ -11,7 +11,8 @@
 #include "GrammarAnalysis.hpp"
 
 // extern int read_grammar(const std::string &filename);
-extern std::vector<std::shared_ptr<Production>> read_grammar(const std::string &f);
+extern std::vector<std::shared_ptr<Production>> 
+read_grammar(const std::string &f, const std::string &null = "$");
 
 namespace LR {
     extern void analyze(const std::vector<std::shared_ptr<Production>> &prods, 

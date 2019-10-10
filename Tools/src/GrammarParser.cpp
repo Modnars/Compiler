@@ -31,7 +31,8 @@ std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
 // Read the grammar from file.
 // The function could generate the TerminalSet and NonTerminalSet.
 // The TerminalSet generated will contains '$', which is used to compute FirstSet.
-std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filename) {
+std::vector<std::shared_ptr<Production>> 
+read_grammar(const std::string &filename, const std::string &null) {
     std::vector<std::shared_ptr<Production>> prodVec;
     std::ifstream is(filename);
     if (!is) {
@@ -51,5 +52,6 @@ std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filenam
     }
     is.close();
     Production::setStart(prodVec[0]->left);
+    Production::setNull(null);
     return prodVec;
 }
