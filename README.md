@@ -1,5 +1,9 @@
 # Compiler
 
+### [Tools](./Tools/)
+
+- Judging whether the grammar is LL(1), SLR(1) or LR(1).
+
 ### Implementation in [C/C++ (Lex & Yacc)](./cpp/)
 
 - Using Lex(Flex), Yacc(Bison) and C/C++ to implement a simple compiler.
