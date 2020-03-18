@@ -1,4 +1,4 @@
 tmp/
 *.o
 *.out
-result
+analyze

@@ -30,12 +30,18 @@ extern std::ostream &operator<<(std::ostream &, const Item &);
 extern bool operator<(const Item &a, const Item &b);
 extern bool operator==(const Item &a, const Item &b);
 
+/**
+ * Check whether the `set` contains `value` as key.
+ */
 template <typename T>
 extern bool contains(std::set<T> &set, const T &value) {
     if (set.empty()) return false;
     return set.find(value) != set.end();
 }
 
+/**
+ * Check whether the vector contains `value`.
+ */
 template <typename T>
 extern bool contains(const std::vector<T> &vec, const T &val) {
     if (vec.empty())
@@ -46,11 +52,17 @@ extern bool contains(const std::vector<T> &vec, const T &val) {
     return false;
 }
 
+/**
+ * Check whether the `map` contains `value` as key.
+ */
 template <typename K, typename T>
 extern bool contains(const std::map<K, T> &map, const K &val) {
     return map.find(val) != map.end();
 }
 
+/**
+ * The `Production`, which is used to store the grammar under a formatible way.
+ */
 class Production {
 public:
     Production(const std::string &left, const std::vector<std::string> &rights) :
@@ -59,10 +71,10 @@ public:
     const std::string left;
     const std::vector<std::string> rights;
 
-    // Set the Production's empty string contents.
-    static void setNull(const std::string&);
+    // Set the Production's expression for `null` and `start`.
+    static void setNull(const std::string &);
     static std::string null();
-    static void setStart(const std::string&);
+    static void setStart(const std::string &);
     static std::string start();
 
 private:
@@ -70,6 +82,9 @@ private:
     static std::string _start;
 };
 
+/**
+ * The `Item`, which is used for store the status as the basic element in closure. 
+ */
 class Item {
 public:
     const std::string left;
@@ -82,11 +97,11 @@ public:
             const std::string &search) :
         left(left), rights(rights), search(search) { checkRep(); }
 
-    bool could_reduce() const ;
-    bool is_reduced_by(const Production &) const ;
-    std::size_t pos() const ;
-    std::string nxsb() const ; // Get the status (dot) next symbol.
-    Item shift() const ;
+    bool could_reduce() const;
+    bool is_reduced_by(const Production &) const;
+    std::size_t pos() const;
+    std::string nxsb() const; // Get the status (dot) next symbol.
+    Item shift() const;
 
     // Set and get the class Item's status mark symbol, whose default value is "@".
     static void setMark(const std::string &);

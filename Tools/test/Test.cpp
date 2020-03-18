@@ -10,7 +10,7 @@
 #include "GrammarParser.hpp"
 
 namespace Test {
-    void set_enter_test_color(std::string title = "") {
+    void enter_test(std::string title = "") {
         if (title != "") {
             std::cout << GREEN << "-> Test for " << title << ":" << std::endl;
         }
@@ -18,31 +18,38 @@ namespace Test {
                   << std::endl;
     }
 
-    void set_exit_test_color() {
+    void exit_test() {
         std::cout << RED << ">>>>>>>>>>   RETURN   <<<<<<<<<<\n" << NONE 
                   << std::endl;
     }
 
     void test_for_read_grammar() {
-        set_enter_test_color("Read_Grammar");
-        std::string f = "../file/grammar.txt";
+        enter_test("Read_Grammar");
+        std::string f = "../res/txt/grammar.txt";
         for (auto pptr : read_grammar(f))
             std::cout << *pptr << std::endl;
-        set_exit_test_color();
+        exit_test();
     }
 
     void test_for_SLR() {
-        set_enter_test_color("SLR");
-        std::string f = "/Users/StevenShen/Project/CompExp/file/grammar/grammar1.txt";
-        SLR::analyze(read_grammar(f));
-        set_exit_test_color();
+        enter_test("SLR(1)");
+        std::string f = "../res/txt/grammar.txt";
+        std::cout << ((SLR::analyze(read_grammar(f)) == true) ? 
+            "TEST SUCCESS" : "TEST FAILED") << std::endl;
+        exit_test();
     }
 
     void test_for_LR() {
+        enter_test("SLR(1)");
+        std::string f = "../res/txt/grammar.txt";
+        std::cout << ((LR::analyze(read_grammar(f)) == false) ? 
+            "TEST SUCCESS" : "TEST FAILED") << std::endl;
+        exit_test();
     }
 
     void test_all() {
         test_for_read_grammar();
-        // test_for_SLR();
+        test_for_SLR();
+        test_for_LR();
     }
 }

@@ -10,17 +10,16 @@
 
 #include "GrammarAnalysis.hpp"
 
-// extern int read_grammar(const std::string &filename);
 extern std::vector<std::shared_ptr<Production>> 
 read_grammar(const std::string &f, const std::string &null = "$");
 
 namespace LR {
-    extern void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
+    extern bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
 
 namespace SLR {
-    extern void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
+    extern bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
 

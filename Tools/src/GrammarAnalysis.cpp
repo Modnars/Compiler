@@ -14,16 +14,18 @@ const std::string RED     = "\e[0;31m";
 const std::string WHITE   = "\e[1;37m";
 const std::string YELLOW  = "\e[1;33m";
 
+/**
+ * Split the source string `str` at `delim`.
+ */
 std::vector<std::string> split(const std::string &str, const std::string &delim) { 
     std::vector<std::string> res;
-    if("" == str) return res;
+    if ("" == str) return res;
     std::string strs = str + delim; 
-    size_t pos, size = strs.size();
+    int pos, size = strs.size();
     for (int i = 0; i < size; ++i) {
         pos = strs.find(delim, i); 
-        if(pos < size) { 
-            std::string s = strs.substr(i, pos - i); 
-            res.push_back(s); 
+        if (pos < size) { 
+            res.emplace_back(strs.substr(i, pos-i)); 
             i = pos + delim.size() - 1;
         }
     }
@@ -91,7 +93,7 @@ std::string Production::_null = "$";
 
 /**
  * Set the Production's start-production contents.
- * @param null The start production's expression.
+ * @param start The start production's expression.
  */
 void Production::setStart(const std::string &start) {
     _start = start;
@@ -158,11 +160,6 @@ std::string Item::nxsb() const {
 Item Item::shift() const {
     auto tmp = rights;
     std::swap(tmp[_pos], tmp[_pos+1]);
-//    for (std::size_t i = 0; i < tmp.size(); ++i)
-//        if (tmp[i] == _mark) {
-//            std::swap(tmp[i], tmp[i+1]);
-//            break;
-//        }
     return Item(left, tmp, search);
 }
 
@@ -185,6 +182,9 @@ std::string Item::mark() {
 /* Initialize the Item's dot contents with "@" */
 std::string Item::_mark = "@";
 
+/**
+ * Check whether the grammar is right with the configure of `Item::_mark`.
+ */
 void Item::checkRep() {
     std::size_t i;
     for (i = 0; i < rights.size(); ++i) 

@@ -30,6 +30,8 @@ namespace {
     std::stack<int> StateStack;  
     // Store the Symbol Stack information.
     std::stack<std::string> SymbolStack; 
+
+    bool failure;
 }
 
 namespace LR {
@@ -39,6 +41,7 @@ namespace LR {
         return contains(*FirstSet[sym], Production::null());
     }
 
+    // Compute the `FIRST` set.
     void getFirstSet() {
         std::shared_ptr<std::vector<std::string>> first;
         for (auto var : TerminalSet) {
@@ -103,7 +106,7 @@ namespace LR {
         getFirstSet();
     }
 
-    // Extend the closure when the closure need to extending.
+    // Extend the closure when the closure needs to extending.
     // For example, we can use the function to get status I0 after we put start item 
     // in closure.
     void extend(std::set<Item> &closure) {
@@ -189,6 +192,7 @@ namespace LR {
                                 for (auto item : closure) 
                                     os << item << std::endl;
                                 os << "Error! [1] The Gramma fill the ActionTable repeatly!" << std::endl;
+                                failure = true;
                             }
                         } // ... Done
                         found = true;
@@ -206,6 +210,7 @@ namespace LR {
                             (*ActionTable[i])[sym] = ClosureSet.size()-1;
                         } else {
                             os << "Error! [2] The Gramma fill the ActionTable repeatly!" << std::endl;
+                            failure = true;
                         }
                     } // ... Done
                 }
@@ -233,6 +238,7 @@ namespace LR {
                                     os << "Production: " << *ProdVec[j] << std::endl;
                                     os << "Pos: " << i << ", " << item.search << std::endl;
                                     os << "Have Existed: " << (*ActionTable[i])[item.search] << std::endl;
+                                    failure = true;
                                 }
                             } 
                             break;
@@ -243,10 +249,12 @@ namespace LR {
         } /* for (size_t i = 0; ...) loop */
     }
 
-    void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
+    bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os) {
+        failure = false;
         initialize(prods);
         getClosureSet(os);
         fillReduceAction(os);
+        return failure;
     }
 }

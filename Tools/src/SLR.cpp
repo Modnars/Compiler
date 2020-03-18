@@ -31,6 +31,9 @@ namespace {
     
     std::stack<int> StateStack;  // Store the State Stack information.
     std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
+
+    // Mark the analysis result.
+    bool failure;
 }
 
 namespace SLR {
@@ -203,6 +206,7 @@ namespace SLR {
                                 for (auto item : closure) 
                                     os << item << std::endl;
                                 os << "Error! [1] The Gramma fill the ActionTable repeatly!" << std::endl;
+                                failure = true;
                             }
                         } // ... Done
                         found = true;
@@ -220,6 +224,7 @@ namespace SLR {
                             (*ActionTable[i])[sym] = ClosureSet.size()-1;
                         } else {
                             os << "Error! [2] The Gramma fill the ActionTable repeatly!" << std::endl;
+                            failure = true;
                         }
                     } // ... Done
                 }
@@ -248,6 +253,7 @@ namespace SLR {
                                         os << "Production: " << *ProdVec[j] << std::endl;
                                         os << "Pos: " << i << ", " << item.search << std::endl;
                                         os << "Have Existed: " << (*ActionTable[i])[item.search] << std::endl;
+                                        failure = true;
                                     }
                                         
                                 }
@@ -260,10 +266,12 @@ namespace SLR {
         } /* for (size_t i = 0; ...) loop */
     }
 
-    void analyze(const std::vector<std::shared_ptr<Production>> &prods, 
+    bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os) {
+        failure = false;
         initialize(prods);
         getClosureSet(os);
         fillReduceAction(os);
+        return failure;
     }
 }
