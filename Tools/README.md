@@ -22,7 +22,7 @@ $ ./analyze -all ../res/txt/grammar.txt
 
 &#160; &#160; &#160; &#160; 运行结果展示：
 
-![GrammarParser execution output](../res/img/output.png)
+![GrammarParser execution output](res/img/output.png)
 
 &#160; &#160; &#160; &#160; 命令参数说明：
 
