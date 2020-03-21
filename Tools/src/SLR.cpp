@@ -205,7 +205,8 @@ namespace SLR {
                             } else {
                                 for (auto item : closure) 
                                     os << item << std::endl;
-                                os << "Error! [1] The Gramma fill the ActionTable repeatly!" << std::endl;
+                                if (Parser::SHOW_DETAILS)
+                                    os << "Error! [1] The Gramma fill the ActionTable repeatly!" << std::endl;
                                 failure = true;
                             }
                         } // ... Done
@@ -223,7 +224,8 @@ namespace SLR {
                         if (!contains(*ActionTable[i], sym)) {
                             (*ActionTable[i])[sym] = ClosureSet.size()-1;
                         } else {
-                            os << "Error! [2] The Gramma fill the ActionTable repeatly!" << std::endl;
+                            if (Parser::SHOW_DETAILS)
+                                os << "Error! [2] The Gramma fill the ActionTable repeatly!" << std::endl;
                             failure = true;
                         }
                     } // ... Done
@@ -249,10 +251,13 @@ namespace SLR {
                                     if (!contains(*ActionTable[i], sym)) {
                                         (*ActionTable[i])[sym] = base + j;
                                     } else if ((*ActionTable[i])[sym] != base+j) {
-                                        os << "\nError! [3] The Gramma fill the ActionTable repeatly!" << std::endl;
-                                        os << "Production: " << *ProdVec[j] << std::endl;
-                                        os << "Pos: " << i << ", " << item.search << std::endl;
-                                        os << "Have Existed: " << (*ActionTable[i])[item.search] << std::endl;
+                                        if (Parser::SHOW_DETAILS) {
+                                            os << "\nError! [3] The Gramma fill the ActionTable repeatly!"
+                                               << "\nProduction: " << *ProdVec[j]
+                                               << "\nPos: " << i << ", " << item.search
+                                               << "\nHave Existed: " << (*ActionTable[i])[item.search] 
+                                               << std::endl;
+                                        }
                                         failure = true;
                                     }
                                         

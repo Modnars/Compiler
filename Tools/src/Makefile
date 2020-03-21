@@ -1,7 +1,7 @@
 CC          =g++
 CFLAGS      =-std=c++11 -Wall -I ../include/
-OBJ         =GrammarAnalysis.o GrammarParser.o SLR.o LR.o main.o
-SRC         =GrammarAnalysis.cpp GrammarParser.cpp SLR.cpp LR.cpp main.cpp
+OBJ         =GrammarAnalysis.o GrammarParser.o LL.o SLR.o LR.o main.o
+SRC         =GrammarAnalysis.cpp GrammarParser.cpp LL.cpp SLR.cpp LR.cpp main.cpp
 HEADFILES   =../include/*.hpp
 PROGRAM     =analyze
 DEBUGER     =lldb

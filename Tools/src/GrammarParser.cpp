@@ -15,19 +15,6 @@
 #include <map>
 #include <set>
 
-std::set<std::string> NonTerminalSet;             // Store the non-terminal symbols.
-std::set<std::string> TerminalSet;                // Store the terminal symbols.
-
-// Store the First Set.
-std::map<std::string, std::shared_ptr<std::vector<std::string>>> FirstSet;  
-std::vector<std::set<Item>> ClosureSet; // Store the Closures' set.
-
-// Store the Action information of Reduce, Shift and Goto.
-std::map<int, std::shared_ptr<std::map<std::string, int>>> ActionTable;
-
-std::stack<int> StateStack;  // Store the State Stack information.
-std::stack<std::string> SymbolStack; // Store the Symbol Stack information.
-
 // Read the grammar from file.
 // The function could generate the TerminalSet and NonTerminalSet.
 // The TerminalSet generated will contains '$', which is used to compute FirstSet.
@@ -51,7 +38,7 @@ read_grammar(const std::string &filename, const std::string &null) {
         prodVec.push_back(std::make_shared<Production>(left, rights));
     }
     is.close();
-    Production::setStart(prodVec[0]->left);
-    Production::setNull(null);
+    Production::setStart(prodVec[0]->left); // Set the `Start` symbol.
+    Production::setNull(null);              // Set the `null` symbol.
     return prodVec;
 }

@@ -10,15 +10,25 @@
 
 #include "GrammarAnalysis.hpp"
 
+namespace Parser {
+    // Modified by `main`, which is used for controlling whether show execution details.
+    extern bool SHOW_DETAILS;
+}
+
 extern std::vector<std::shared_ptr<Production>> 
 read_grammar(const std::string &f, const std::string &null = "$");
 
-namespace LR {
+namespace LL {
     extern bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
 
 namespace SLR {
+    extern bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
+            std::ostream &os = std::cout);
+}
+
+namespace LR {
     extern bool analyze(const std::vector<std::shared_ptr<Production>> &prods, 
             std::ostream &os = std::cout);
 }
