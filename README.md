@@ -1,19 +1,27 @@
 # Compiler
 
-### [Tools](./Tools/)
+## [GrammarParserTools](./Tools/)
 
-- Judging whether the grammar is LL(1), SLR(1) or LR(1).
+&#160;&#160;&#160;&#160; 文法检查工具：判断输入文法是否满足指定的编译解析文法类型。
 
-### Implementation in [C/C++ (Lex & Yacc)](./cpp/)
+&#160;&#160;&#160;&#160; 目前支持检查的文法类型包括`SLR(1)`和`LR(1)`。
 
-- Using Lex(Flex), Yacc(Bison) and C/C++ to implement a simple compiler.
+## [C语言](./c/)实现
 
-Status: TODO
+&#160;&#160;&#160;&#160; `C语言`实现的简易编译器前端。
 
-### Implementation in [Java](./java/)
+&#160;&#160;&#160;&#160; 通过Lex/Yacc来完成词法分析、语法分析以及语义分析，目前暂未完成。
 
-- Using Java to implement a simple compiler. 
+## [C++](./cpp/)实现
 
-Source code are from "Compilers Principles, Techniques and Tools"
+&#160;&#160;&#160;&#160; `C++11`实现的简易编译器前端。
+
+&#160;&#160;&#160;&#160; 实现思路部分参考《编译原理(Compilers: Principles, Techniques and Tools)》，目前暂未完成。
+
+## [Java](./java/)实现
+
+&#160;&#160;&#160;&#160; `Java`实现的简易编译器前端。
+
+&#160;&#160;&#160;&#160; 其实现代码均来自于《编译原理(Compilers: Principles, Techniques and Tools)》
 
 #### Date: 2019-05-12
