@@ -6,3 +6,7 @@ analyze
 bin/
 
 result
+
+.vscode
+.cache
+build/

@@ -7,33 +7,35 @@
 
 #include "GrammarAnalysis.hpp"
 
-const std::string NONE    = "\e[0m";
-const std::string BLUE    = "\e[0;34m";
-const std::string GREEN   = "\e[0;32m";
-const std::string RED     = "\e[0;31m";
-const std::string WHITE   = "\e[1;37m";
-const std::string YELLOW  = "\e[1;33m";
+const std::string NONE   = "\e[0m";
+const std::string BLUE   = "\e[0;34m";
+const std::string GREEN  = "\e[0;32m";
+const std::string RED    = "\e[0;31m";
+const std::string WHITE  = "\e[1;37m";
+const std::string YELLOW = "\e[1;33m";
 
 /**
  * Split the source string `str` at `delim`.
  */
-std::vector<std::string> split(const std::string &str, const std::string &delim) { 
+std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> res;
-    if ("" == str) return res;
-    std::string strs = str + delim; 
+    if ("" == str)
+        return res;
+    std::string strs = str + delim;
     int pos, size = strs.size();
     for (int i = 0; i < size; ++i) {
-        pos = strs.find(delim, i); 
-        if (pos < size) { 
-            res.emplace_back(strs.substr(i, pos-i)); 
+        pos = strs.find(delim, i);
+        if (pos < size) {
+            res.emplace_back(strs.substr(i, pos - i));
             i = pos + delim.size() - 1;
         }
     }
-    return res;	
+    return res;
 }
 
 std::string &trim(std::string &s) {
-    if (s.empty()) return s;
+    if (s.empty())
+        return s;
     s.erase(0, s.find_first_not_of(" "));
     s.erase(s.find_last_not_of(" ") + 1);
     return s;
@@ -125,12 +127,15 @@ bool Item::could_reduce() const {
  * @return true if the Item could be reduced by the parameter, otherwise false.
  */
 bool Item::is_reduced_by(const Production &p) const {
-    if (!could_reduce()) return false;
-    if (left != p.left) return false;
+    if (!could_reduce())
+        return false;
+    if (left != p.left)
+        return false;
     if (rights.back() == Production::null() && p.rights[0] == Production::null())
         return true;
-    for (std::size_t i = 0; i < p.rights.size(); ++i) 
-        if (rights[i] != p.rights[i]) return false;
+    for (std::size_t i = 0; i < p.rights.size(); ++i)
+        if (rights[i] != p.rights[i])
+            return false;
     return true;
 }
 
@@ -138,7 +143,7 @@ bool Item::is_reduced_by(const Production &p) const {
  * Get the Item's status dot's position.
  * @return the dot's index.
  */
-// Warning: the function is different from HIT-Compiler-Experiment. If could not 
+// Warning: the function is different from HIT-Compiler-Experiment. If could not
 //          find the mark, return rights.size();
 std::size_t Item::pos() const {
     return _pos;
@@ -148,9 +153,10 @@ std::size_t Item::pos() const {
  * Get the status (dot) next symbol.
  * @return the symbol whose index is pos+1.
  */
-std::string Item::nxsb() const { 
-    if (could_reduce()) return "";
-    return rights[_pos+1];
+std::string Item::nxsb() const {
+    if (could_reduce())
+        return "";
+    return rights[_pos + 1];
 }
 
 /**
@@ -159,7 +165,7 @@ std::string Item::nxsb() const {
  */
 Item Item::shift() const {
     auto tmp = rights;
-    std::swap(tmp[_pos], tmp[_pos+1]);
+    std::swap(tmp[_pos], tmp[_pos + 1]);
     return Item(left, tmp, search);
 }
 
@@ -187,8 +193,9 @@ std::string Item::_mark = "@";
  */
 void Item::checkRep() {
     std::size_t i;
-    for (i = 0; i < rights.size(); ++i) 
-        if (rights[i] == _mark) break;
+    for (i = 0; i < rights.size(); ++i)
+        if (rights[i] == _mark)
+            break;
     if (i == rights.size()) {
         std::cerr << RED << "Failed to construct Item object." << NONE << std::endl;
         exit(EXIT_FAILURE);
