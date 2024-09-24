@@ -6,30 +6,28 @@
 #include "GrammarAnalysis.hpp"
 #include "GrammarParser.hpp"
 
-#include <fstream>
 #include <cstdio>
+#include <fstream>
+#include <map>
 #include <memory>
+#include <set>
+#include <stack>
 #include <string>
 #include <vector>
-#include <stack>
-#include <map>
-#include <set>
 
 // Read the grammar from file.
 // The function could generate the TerminalSet and NonTerminalSet.
 // The TerminalSet generated will contains '$', which is used to compute FirstSet.
-std::vector<std::shared_ptr<Production>> 
-read_grammar(const std::string &filename, const std::string &null) {
+std::vector<std::shared_ptr<Production>> read_grammar(const std::string &filename, const std::string &null) {
     std::vector<std::shared_ptr<Production>> prodVec;
     std::ifstream is(filename);
     if (!is) {
-        std::cerr << RED << "Failed to open file '" << filename << "'." << NONE 
-                  << std::endl;
+        std::cerr << RED << "Failed to open file '" << filename << "'." << NONE << std::endl;
         return prodVec;
     }
     std::string line;
     while (getline(is, line)) {
-        auto tmpVec = split(line, "->");
+        auto tmpVec      = split(line, "->");
         std::string left = trim(tmpVec[0]);
         std::vector<std::string> rights;
         tmpVec = split(trim(tmpVec[1]), " ");

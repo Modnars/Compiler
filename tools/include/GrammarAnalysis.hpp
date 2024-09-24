@@ -7,10 +7,10 @@
 #define __GRAMMAR_ANALYSIS_HPP
 
 #include <iostream>
-#include <vector>
-#include <string>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 extern const std::string NONE;
 extern const std::string BLUE;
@@ -35,7 +35,8 @@ extern bool operator==(const Item &a, const Item &b);
  */
 template <typename T>
 extern bool contains(std::set<T> &set, const T &value) {
-    if (set.empty()) return false;
+    if (set.empty())
+        return false;
     return set.find(value) != set.end();
 }
 
@@ -65,8 +66,7 @@ extern bool contains(const std::map<K, T> &map, const K &val) {
  */
 class Production {
 public:
-    Production(const std::string &left, const std::vector<std::string> &rights) :
-        left(left), rights(rights) { }
+    Production(const std::string &left, const std::vector<std::string> &rights) : left(left), rights(rights) {}
 
     const std::string left;
     const std::vector<std::string> rights;
@@ -83,7 +83,7 @@ private:
 };
 
 /**
- * The `Item`, which is used for store the status as the basic element in closure. 
+ * The `Item`, which is used for store the status as the basic element in closure.
  */
 class Item {
 public:
@@ -91,11 +91,13 @@ public:
     const std::vector<std::string> rights;
     const std::string search;
 
-    Item(const std::string &left, const std::vector<std::string> &rights) :
-        left(left), rights(rights), search("") { checkRep(); }
-    Item(const std::string &left, const std::vector<std::string> &rights, 
-            const std::string &search) :
-        left(left), rights(rights), search(search) { checkRep(); }
+    Item(const std::string &left, const std::vector<std::string> &rights) : left(left), rights(rights), search("") {
+        checkRep();
+    }
+    Item(const std::string &left, const std::vector<std::string> &rights, const std::string &search)
+        : left(left), rights(rights), search(search) {
+        checkRep();
+    }
 
     bool could_reduce() const;
     bool is_reduced_by(const Production &) const;
