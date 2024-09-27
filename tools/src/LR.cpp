@@ -3,6 +3,7 @@
 // Date   : 2019-09-27
 // Copyright (C) 2019 Modnar. All rights reserved.
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -24,7 +25,7 @@ std::map<std::string, std::shared_ptr<std::vector<std::string>>> FirstSet;
 std::vector<std::set<Item>> ClosureSet;
 
 // Store the action information of REDUCE, SHIFT and GOTO.
-std::map<int, std::shared_ptr<std::map<std::string, int>>> ActionTable;
+std::map<std::size_t, std::shared_ptr<std::map<std::string, std::size_t>>> ActionTable;
 
 // Store the State Stack information.
 std::stack<int> StateStack;
@@ -104,6 +105,15 @@ void initialize(const std::vector<std::shared_ptr<Production>> &prods) {
             if (!contains(NonTerminalSet, right))
                 TerminalSet.insert(right);
     getFirstSet();
+    std::cout << "FirstSet: " << FirstSet.size() << std::endl;
+    for (const auto &kv : FirstSet)
+    {
+        std::cout << kv.first << ": ";
+        for (const auto &item: *kv.second) {
+            std::cout << item << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 // Extend the closure when the closure needs to extending.
@@ -164,7 +174,7 @@ void getClosureSet(std::ostream &os = std::cout) {
     getI0();
     std::set<Item> closure;
     std::vector<std::string> tmpVec, rights; // Store the temp next symbol.
-    for (int i = 0; i < ClosureSet.size(); ++i) {
+    for (std::size_t i = 0UL; i < ClosureSet.size(); ++i) {
         tmpVec.clear();
         for (auto item : ClosureSet[i]) {
             if (!item.could_reduce() && !contains(tmpVec, item.nxsb()))
@@ -179,11 +189,11 @@ void getClosureSet(std::ostream &os = std::cout) {
             }
             extend(closure);
             bool found = false; // Mark whether find the closure from before closures.
-            for (int j = 0; j < ClosureSet.size(); ++j) {
+            for (std::size_t j = 0UL; j < ClosureSet.size(); ++j) {
                 if (ClosureSet[j] == closure) {
                     // Use new data structure. Here...
                     if (!contains(ActionTable, i)) {
-                        ActionTable[i]         = std::make_shared<std::map<std::string, int>>();
+                        ActionTable[i]         = std::make_shared<std::map<std::string, std::size_t>>();
                         (*ActionTable[i])[sym] = j;
                     } else {
                         if (!contains(*ActionTable[i], sym)) {
@@ -204,8 +214,8 @@ void getClosureSet(std::ostream &os = std::cout) {
                 ClosureSet.push_back(closure);
                 // Use new data structure. Here...
                 if (!contains(ActionTable, i)) {
-                    ActionTable[i]         = std::make_shared<std::map<std::string, int>>();
-                    (*ActionTable[i])[sym] = ClosureSet.size() - 1;
+                    ActionTable[i]         = std::make_shared<std::map<std::string, std::size_t>>();
+                    (*ActionTable[i])[sym] = ClosureSet.size() - 1UL;
                 } else {
                     if (!contains(*ActionTable[i], sym)) {
                         (*ActionTable[i])[sym] = ClosureSet.size() - 1;
@@ -218,19 +228,26 @@ void getClosureSet(std::ostream &os = std::cout) {
             }
         }
     }
+    os << ClosureSet.size() << std::endl;
+    for (const auto &closure: ClosureSet)
+    {
+        for (const auto &item: closure)
+            os << item << std::endl;
+        os << std::endl;
+    }
 }
 
 // Fill the ReduceTable when has gotten all the closures.
 // This function is also the key to judge whether the grammar is LR(1) grammar.
 void fillReduceAction(std::ostream &os = std::cerr) {
     int base = ClosureSet.size();
-    for (int i = 0; i < ClosureSet.size(); ++i) {
+    for (std::size_t i = 0UL; i < ClosureSet.size(); ++i) {
         for (auto item : ClosureSet[i]) {
             if (item.could_reduce()) {
                 for (int j = 0; j < ProdVec.size(); ++j) {
                     if (item.is_reduced_by(*ProdVec[j])) {
                         if (!contains(ActionTable, i)) {
-                            ActionTable[i]                 = std::make_shared<std::map<std::string, int>>();
+                            ActionTable[i]                 = std::make_shared<std::map<std::string, std::size_t>>();
                             (*ActionTable[i])[item.search] = base + j;
                         } else {
                             if (!contains(*ActionTable[i], item.search)) {

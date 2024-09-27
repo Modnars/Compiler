@@ -111,7 +111,7 @@ public:
 
 private:
     static std::string _mark;
-    std::size_t _pos = 0; // Store the item's dot mark's position.
+    std::size_t _pos = 0UL; // Store the item's dot mark's position.
     void checkRep();
 };
 
