@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
     if (ret != 0) {
         std::cerr << Color::RED << "Failed to read grammar." << Color::RESET << std::endl;
     }
-    // auto parser = slr::Parser(productions, productionIndexes);
     slr::Parser parser{grammar};
     parser.Parse();
     parser.ShowDetails();

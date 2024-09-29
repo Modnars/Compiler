@@ -39,7 +39,6 @@ public:
     const std::string &NextSymbol() const;
 
     std::shared_ptr<Item> Shift() const { return this->shift_; }
-    void SetShift(std::shared_ptr<Item> shift) { this->shift_ = shift; };
 
 private:
     std::shared_ptr<Production> production_;
@@ -84,6 +83,7 @@ public:
     }
 
     int CLOSURE(std::shared_ptr<ItemSet> itemSet);
+    std::shared_ptr<ItemSet> GOTO(std::shared_ptr<ItemSet> itemSet, std::string symbol);
 
     int Parse();
 

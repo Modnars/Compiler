@@ -35,9 +35,9 @@ bool Item::HasNextSymbol() const {
 }
 
 const std::string &Item::NextSymbol() const {
-    static std::string none = "";
+    static const std::string empty = ""; // return empty string when HasNextSymbol is false
     if (!this->HasNextSymbol())
-        return none;
+        return empty;
     return this->production_->Right[this->dot_pos_];
 }
 
