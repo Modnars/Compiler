@@ -15,16 +15,18 @@
 
 namespace slr {
 class Item;
-}
+
+inline std::shared_ptr<Item> NewItem(std::shared_ptr<Production>, std::size_t, std::shared_ptr<Item> prev = nullptr);
+} // namespace slr
 
 bool operator<(const slr::Item &lhs, const slr::Item &rhs);
 
 namespace slr {
-
 static const std::string DotMark = "·";
 
 class Item {
     friend bool ::operator<(const Item & lhs, const Item & rhs);
+    friend std::shared_ptr<Item> NewItem(std::shared_ptr<Production>, std::size_t, std::shared_ptr<Item>);
 
 public:
     Item(std::shared_ptr<Production> production, std::size_t dot_pos) : production_(production), dot_pos_(dot_pos) {}
@@ -41,9 +43,17 @@ public:
 
 private:
     std::shared_ptr<Production> production_;
-    std::size_t dot_pos_ = 0UL;
-    std::shared_ptr<Item> shift_;
+    std::size_t dot_pos_         = 0UL;
+    std::shared_ptr<Item> shift_ = nullptr;
 };
+
+inline std::shared_ptr<Item> NewItem(std::shared_ptr<Production> production, std::size_t dot_pos,
+                                     std::shared_ptr<Item> prev) {
+    auto newItem = std::make_shared<Item>(production, dot_pos);
+    if (prev)
+        prev->shift_ = newItem;
+    return newItem;
+}
 
 class ItemSet {
 public:
@@ -51,8 +61,11 @@ public:
 
     bool Add(std::shared_ptr<Item> item) { return this->items_.insert(item).second; }
     bool Contains(std::shared_ptr<Item> item) const { return this->items_.find(item) != this->items_.end(); }
+    bool Equals(std::shared_ptr<ItemSet> rhs) const { return this->items_ == rhs->items_; }
 
+public:
     const std::set<std::shared_ptr<Item>> &Items() const { return items_; }
+    std::vector<std::shared_ptr<ItemSet>> Shift() const;
 
 private:
     std::set<std::shared_ptr<Item>> items_;
@@ -74,6 +87,8 @@ public:
 
     int Parse();
 
+    int ShowDetails() const;
+
 private:
     int makeItems();
 
@@ -84,7 +99,7 @@ private:
         return iter->second;
     }
 
-    std::vector<std::shared_ptr<ItemSet>> shiftItemSets(std::shared_ptr<ItemSet> itemSet);
+    int calcAllClosure();
 
 private:
     const std::vector<std::shared_ptr<Production>> &productions_;
@@ -94,5 +109,4 @@ private:
     std::map<std::uint32_t, std::shared_ptr<ItemSet>> closures_;
     std::uint32_t closure_id_generator_ = 0U;
 };
-
 } // namespace slr

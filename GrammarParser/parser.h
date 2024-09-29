@@ -12,7 +12,7 @@
 
 class Color {
 public:
-    static const std::string NONE;
+    static const std::string RESET;
     static const std::string BLUE;
     static const std::string GREEN;
     static const std::string RED;

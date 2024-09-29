@@ -9,7 +9,7 @@
 
 #include "parser.h"
 
-const std::string Color::NONE   = "\e[0m";
+const std::string Color::RESET  = "\e[0m";
 const std::string Color::BLUE   = "\e[0;34m";
 const std::string Color::GREEN  = "\e[0;32m";
 const std::string Color::RED    = "\e[0;31m";
@@ -17,7 +17,6 @@ const std::string Color::WHITE  = "\e[1;37m";
 const std::string Color::YELLOW = "\e[1;33m";
 
 namespace {
-
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> res;
     if ("" == str)
@@ -41,7 +40,6 @@ std::string &trim(std::string &s) {
     s.erase(s.find_last_not_of(" ") + 1);
     return s;
 }
-
 } // namespace
 
 std::string Production::ToString() const {
@@ -56,7 +54,7 @@ std::string Production::ToString() const {
 int ReadGrammar(std::string filepath, Grammar &grammar) {
     std::ifstream is(filepath);
     if (!is) {
-        std::cerr << Color::RED << "Failed to open file '" << filepath << "'." << Color::NONE << std::endl;
+        std::cerr << Color::RED << "error: failed to open file '" << filepath << "'." << Color::RESET << std::endl;
         return -1;
     }
     std::string line;

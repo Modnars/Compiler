@@ -15,12 +15,6 @@ bool operator<(const slr::Item &lhs, const slr::Item &rhs) {
     return std::tie(lhs.production_, lhs.dot_pos_) < std::tie(rhs.production_, rhs.dot_pos_);
 }
 
-namespace {
-bool Equal(std::shared_ptr<slr::ItemSet> lhs, std::shared_ptr<slr::ItemSet> rhs) {
-    return lhs->Items() == rhs->Items();
-}
-} // namespace
-
 namespace slr {
 std::string Item::ToString() const {
     std::stringstream ss;
@@ -47,35 +41,35 @@ const std::string &Item::NextSymbol() const {
     return this->production_->Right[this->dot_pos_];
 }
 
-int Parser::makeItems() {
-    for (auto p : this->productions_) {
-        auto head                  = std::make_shared<Item>(p, 0UL);
-        std::shared_ptr<Item> prev = head;
-        item_table_.insert({std::make_pair(p, 0UL), head});
-        for (std::size_t i = 1UL; i <= p->Right.size(); ++i) {
-            auto item = std::make_shared<Item>(p, i);
-            prev->SetShift(item);
-            item_table_.insert({std::make_pair(p, i), item});
-            prev = item;
-        }
-    }
-    return 0;
-}
-
-std::vector<std::shared_ptr<ItemSet>> Parser::shiftItemSets(std::shared_ptr<ItemSet> itemSet) {
-    std::vector<std::shared_ptr<ItemSet>> res;
+std::vector<std::shared_ptr<ItemSet>> ItemSet::Shift() const {
     std::map<std::string, std::shared_ptr<ItemSet>> targets;
-    for (auto item : itemSet->Items()) {
+    for (auto item : this->items_) {
         if (item->Shift()) {
             if (targets[item->NextSymbol()] == nullptr)
                 targets[item->NextSymbol()] = std::make_shared<ItemSet>();
             targets[item->NextSymbol()]->Add(item->Shift());
         }
     }
+    std::vector<std::shared_ptr<ItemSet>> res;
+    res.reserve(targets.size());
     for (auto &&kv : targets) {
         res.emplace_back(kv.second);
     }
     return res;
+}
+
+int Parser::makeItems() {
+    for (auto p : this->productions_) {
+        auto head = NewItem(p, 0UL);
+        auto prev = head;
+        item_table_.insert({std::make_pair(p, 0UL), head});
+        for (std::size_t i = 1UL; i <= p->Right.size(); ++i) {
+            auto item = NewItem(p, i, prev);
+            item_table_.insert({std::make_pair(p, i), item});
+            prev = item;
+        }
+    }
+    return 0;
 }
 
 int Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet) {
@@ -113,13 +107,10 @@ int Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet) {
     return 0;
 }
 
-int Parser::Parse() {
+int Parser::calcAllClosure() {
     auto I0 = std::make_shared<ItemSet>();
     I0->Add(this->item(this->productions_[0], 0UL));
-    int ret = CLOSURE(I0);
-    if (ret != 0) {
-        return ret;
-    }
+    CLOSURE(I0);
 
     std::queue<std::shared_ptr<ItemSet>> seq;
     seq.push(I0);
@@ -128,7 +119,7 @@ int Parser::Parse() {
         seq.pop();
         bool added = false;
         for (auto closure : closures_) {
-            if (Equal(currItemSet, closure.second)) {
+            if (currItemSet->Equals(closure.second)) {
                 added = true;
                 break;
             }
@@ -136,12 +127,12 @@ int Parser::Parse() {
         if (added)
             continue;
         closures_.insert({closure_id_generator_++, currItemSet});
-        const auto &vec = shiftItemSets(currItemSet);
+        const auto &vec = currItemSet->Shift();
         for (auto its : vec) {
             bool needAdd = true;
             CLOSURE(its);
             for (auto closure : closures_) {
-                if (Equal(its, closure.second)) {
+                if (its->Equals(closure.second)) {
                     needAdd = false;
                     break;
                 }
@@ -151,7 +142,14 @@ int Parser::Parse() {
             }
         }
     }
+    return 0;
+}
 
+int Parser::Parse() {
+    return calcAllClosure();
+}
+
+int Parser::ShowDetails() const {
     for (const auto &kv : closures_) {
         std::cout << "I" << kv.first << ":" << std::endl;
         for (auto item : kv.second->Items()) {
