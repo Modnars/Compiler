@@ -13,8 +13,6 @@
 
 class Production {
 public:
-    Production(const std::string &left, const std::vector<std::string> &right, std::int32_t number)
-        : Left(left), Right(right), number_(number) { }
     Production(std::string &&left, std::vector<std::string> &&right, std::int32_t number)
         : Left(left), Right(right), number_(number) { }
 

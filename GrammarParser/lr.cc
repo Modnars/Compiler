@@ -63,6 +63,7 @@ int Parser::Parse() {
 }
 
 void Parser::ShowDetails() const {
+    std::cout << "FIRST SET:" << std::endl;
     for (const auto &kv : this->grammar_.FirstSet) {
         std::cout << kv.first << ": ";
         for (const auto &sym : kv.second) {
@@ -70,13 +71,14 @@ void Parser::ShowDetails() const {
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl << "STATE CLOSURE:" << std::endl;
     for (const auto &kv : this->closures_) {
         std::cout << "\nI" << kv.first << ":" << std::endl;
         for (auto item : kv.second->Items()) {
             std::cout << item->ToString() << std::endl;
         }
     }
-    std::cout << std::endl;
+    std::cout << std::endl << "ACTION TABLE:" << std::endl;
     for (std::size_t i = 0UL; i < this->actionTable_.size(); ++i) {
         std::cout << i << ":\t";
         for (const auto &kv : actionTable_[i]) {
