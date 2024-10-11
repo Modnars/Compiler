@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <set>
@@ -55,9 +56,12 @@ public:
 
 public:
     const std::set<std::shared_ptr<const Item>> &Items() const { return this->items_; };
+    std::size_t Number() const { return this->number; }
+    void SetNumber(std::size_t number) { this->number = number; }
 
 private:
     std::set<std::shared_ptr<const Item>> items_;
+    std::size_t number = 0UL;
 };
 
 class Parser {
@@ -113,12 +117,18 @@ private:
 
     std::map<std::string, std::shared_ptr<ItemSet>> computeGOTO(std::shared_ptr<const ItemSet> itemSet);
 
+    void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
+
+    int queryActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
+
 private:
     Grammar &grammar_;
     std::map<std::pair<std::shared_ptr<Production>, std::size_t>, std::shared_ptr<const lr0::Item>> lr0Items_;
     std::map<std::pair<std::shared_ptr<const lr0::Item>, std::set<std::string>>, std::shared_ptr<const Item>> items_;
     std::map<std::size_t, std::shared_ptr<const ItemSet>> closures_;
     std::size_t closureNum_ = 0UL;
+
+    std::vector<std::map<std::string, std::int64_t>> actionTable_;
 };
 
 }  // namespace lr

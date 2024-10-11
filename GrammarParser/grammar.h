@@ -13,10 +13,10 @@
 
 class Production {
 public:
-    Production(const std::string &left, const std::vector<std::string> &right)
-        : Left(left), Right(right), number(++numberCounter) { }
-    Production(std::string &&left, std::vector<std::string> &&right)
-        : Left(left), Right(right), number(++numberCounter) { }
+    Production(const std::string &left, const std::vector<std::string> &right, std::int32_t number)
+        : Left(left), Right(right), number_(number) { }
+    Production(std::string &&left, std::vector<std::string> &&right, std::int32_t number)
+        : Left(left), Right(right), number_(number) { }
 
 public:
     std::string ToString() const;
@@ -25,9 +25,10 @@ public:
     std::string Left;
     std::vector<std::string> Right;
 
+    std::int32_t Number() const { return number_; }
+
 private:
-    std::uint32_t number = 0U;
-    static std::uint32_t numberCounter;
+    std::int32_t number_ = 0U;
 };
 
 class Grammar {
@@ -36,7 +37,6 @@ public:
     static const std::string NilMark;
 
 public:
-    int CalcFirstSet();
     int ComputeFirstSet();
 
     bool IsTerminal(const std::string &symbol) const {
@@ -49,6 +49,13 @@ public:
             return iter->second;
         }
         return empty;
+    }
+
+    std::shared_ptr<const Production> GetProduction(std::int32_t number) const {
+        if (number > static_cast<int32_t>(Productions.size())) {
+            return nullptr;
+        }
+        return Productions[static_cast<std::size_t>(number - 1)];
     }
 
 public:
@@ -66,7 +73,6 @@ private:
     }
 
     std::set<std::string> computeFirstSet(const std::string &symbol);
-    std::set<std::string> computeFirstSet(std::shared_ptr<Production> production);
 };
 
 int ReadGrammar(std::string filepath, Grammar &grammar);

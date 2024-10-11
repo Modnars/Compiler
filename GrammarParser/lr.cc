@@ -38,7 +38,8 @@ int Parser::Parse() {
     auto I0 = std::make_shared<lr::ItemSet>();
     I0->Add(newLrItem(this->grammar_.Productions[0], 0UL, {"#"}));
     CLOSURE(I0);
-    closures_.insert({closureNum_++, I0});
+    I0->SetNumber(closureNum_++);
+    closures_.insert({I0->Number(), I0});
     std::queue<std::shared_ptr<ItemSet>> seq;
     seq.push(I0);
     while (!seq.empty()) {
@@ -46,12 +47,15 @@ int Parser::Parse() {
         seq.pop();
         for (const auto &kv : computeGOTO(itemSet)) {
             CLOSURE(kv.second);
-            if (auto iter =
-                    std::find_if(closures_.begin(), closures_.end(),
-                                 [&kv](auto &&closure) { return closure.second->Items() == kv.second->Items(); });
-                iter == closures_.end()) {
-                closures_.insert({closureNum_++, kv.second});
+            auto iter = std::find_if(closures_.begin(), closures_.end(),
+                                     [&kv](auto &&closure) { return closure.second->Items() == kv.second->Items(); });
+            if (iter == closures_.end()) {
+                kv.second->SetNumber(closureNum_++);
+                closures_.insert({kv.second->Number(), kv.second});
                 seq.push(kv.second);
+                fillActionTable(itemSet->Number(), kv.first, kv.second->Number());
+            } else {
+                fillActionTable(itemSet->Number(), kv.first, iter->second->Number());
             }
         }
     }
@@ -71,6 +75,14 @@ void Parser::ShowDetails() const {
         for (auto item : kv.second->Items()) {
             std::cout << item->ToString() << std::endl;
         }
+    }
+    std::cout << std::endl;
+    for (std::size_t i = 0UL; i < this->actionTable_.size(); ++i) {
+        std::cout << i << ":\t";
+        for (const auto &kv : actionTable_[i]) {
+            std::cout << kv.first << ": " << kv.second << "\t";
+        }
+        std::cout << std::endl;
     }
 }
 
@@ -150,10 +162,23 @@ std::shared_ptr<const ItemSet> Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet)
     return itemSet;
 }
 
+std::shared_ptr<const ItemSet> Parser::GOTO(std::shared_ptr<const ItemSet> itemSet, const std::string &shiftSymbol) {
+    auto result = std::make_shared<ItemSet>();
+    for (auto item : itemSet->Items()) {
+        if (item->HasNextSymbol() && item->NextSymbol() == shiftSymbol) {
+            result->Add(newLrItem(item->item_->Shift(), item->lookahead_));
+        }
+    }
+    return CLOSURE(result);
+}
+
 std::map<std::string, std::shared_ptr<ItemSet>> Parser::computeGOTO(std::shared_ptr<const ItemSet> itemSet) {
     std::map<std::string, std::shared_ptr<ItemSet>> result;
     for (auto item : itemSet->Items()) {
         if (item->CanReduce()) {
+            for (const auto &symbol : item->lookahead_) {
+                fillActionTable(itemSet->Number(), symbol, -item->item_->GetProduction()->Number());
+            }
             continue;
         }
         if (result[item->NextSymbol()] == nullptr) {
@@ -165,14 +190,17 @@ std::map<std::string, std::shared_ptr<ItemSet>> Parser::computeGOTO(std::shared_
     return result;
 }
 
-std::shared_ptr<const ItemSet> Parser::GOTO(std::shared_ptr<const ItemSet> itemSet, const std::string &shiftSymbol) {
-    auto result = std::make_shared<ItemSet>();
-    for (auto item : itemSet->Items()) {
-        if (item->HasNextSymbol() && item->NextSymbol() == shiftSymbol) {
-            result->Add(newLrItem(item->item_->Shift(), item->lookahead_));
-        }
+void Parser::fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val) {
+    if (this->actionTable_.size() < stateNum + 1UL) {
+        this->actionTable_.reserve(stateNum + 1UL);
+        actionTable_.insert(actionTable_.end(), stateNum + 1UL - actionTable_.size(),
+                            std::map<std::string, std::int64_t>());
     }
-    return CLOSURE(result);
+    if (actionTable_[stateNum].find(symbol) != actionTable_[stateNum].end()) {
+        std::cerr << Color::RED << "conflict!" << Color::RESET << std::endl;
+        return;
+    }
+    actionTable_[stateNum][symbol] = val;
 }
 
 }  // namespace lr

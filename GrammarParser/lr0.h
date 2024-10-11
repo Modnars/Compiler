@@ -49,6 +49,8 @@ public:
 
     const std::vector<std::string> &Right() const { return this->production_->Right; }
 
+    std::shared_ptr<const Production> GetProduction() const { return this->production_; }
+
     std::shared_ptr<Item> Shift() const { return this->shift_; }
 
 private:

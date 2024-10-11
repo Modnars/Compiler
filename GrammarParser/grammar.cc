@@ -12,8 +12,6 @@
 #include "lr0.h"
 #include "parser.h"
 
-std::uint32_t Production::numberCounter = 0U;
-
 const std::string Grammar::EndMark = "#";
 const std::string Grammar::NilMark = "$";
 
@@ -61,77 +59,21 @@ int ReadGrammar(std::string filepath, Grammar &grammar) {
         return -1;
     }
     std::string line;
+    std::int32_t productionNumber = 0;
     while (getline(is, line)) {
         auto tmpVec = split(line, "->");
         std::string left = trim(tmpVec[0]);
-        // grammar.NonTerminalSet.insert(left);
         std::vector<std::string> right;
         tmpVec = split(trim(tmpVec[1]), " ");
         for (int i = 0; i < tmpVec.size(); ++i) {
             auto symbol = trim(tmpVec[i]);
             right.emplace_back(symbol);
-            // grammar.TerminalSet.insert(symbol);
         }
-        auto newProduction = std::make_shared<Production>(std::move(left), std::move(right));
+        auto newProduction = std::make_shared<Production>(std::move(left), std::move(right), ++productionNumber);
         grammar.Productions.emplace_back(newProduction);
         grammar.ProductionIndexes[left].emplace_back(newProduction);
     }
     is.close();
-    return 0;
-}
-
-int Grammar::CalcFirstSet() {
-    for (auto production : this->Productions) {
-        for (const auto &symbol : production->Right) {
-            if (this->ProductionIndexes.find(symbol) == this->ProductionIndexes.end()) {
-                this->FirstSet[symbol].insert(symbol);  // 终结符直接添加
-            } else {
-                this->FirstSet[symbol];
-            }
-        }
-    }
-
-    bool extending = true;
-    while (extending) {
-        extending = false;
-        for (auto production : this->Productions) {
-            std::cout << production->ToString() << std::endl;
-            auto &targetSet = this->FirstSet[production->Left];
-            bool addNil = false;
-            for (std::size_t i = 0UL; i < production->Right.size(); ++i) {
-                if (canGenNil(production->Right[i])) {
-                    if (i + 1UL == production->Right.size()) {
-                        addNil = true;
-                    }
-                    for (const auto &symbol : this->FirstSet[production->Right[i]]) {
-                        if (symbol != Grammar::NilMark) {
-                            extending = targetSet.insert(symbol).second;
-                        }
-                    }
-                } else {
-                    for (const auto &symbol : this->FirstSet[production->Right[i]]) {
-                        extending = targetSet.insert(symbol).second;
-                    }
-                    break;
-                }
-            }
-            if (addNil) {
-                extending = targetSet.insert(Grammar::NilMark).second;
-            }
-        }
-    }
-    auto iter = this->FirstSet.find(Grammar::NilMark);
-    if (iter != this->FirstSet.end()) {
-        this->FirstSet.erase(iter);
-    }
-
-    for (const auto &kv : this->FirstSet) {
-        std::cout << kv.first << ": ";
-        for (const auto &sym : kv.second) {
-            std::cout << sym << " ";
-        }
-        std::cout << std::endl;
-    }
     return 0;
 }
 
