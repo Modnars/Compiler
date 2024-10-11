@@ -10,15 +10,16 @@
 namespace lr0 {
 std::string Item::ToString() const {
     std::stringstream ss;
-    ss << this->production_->Left << " -> ";
-    for (std::size_t i = 0UL; i <= this->production_->Right.size(); ++i) {
-        if (i == this->dotPos_) {
+    ss << production_->Left() << " -> ";
+    const auto &right = production_->Right();
+    for (std::size_t i = 0UL; i <= right.size(); ++i) {
+        if (i == dotPos_) {
             ss << lr0::DotMark << "";
         }
-        if (i < this->production_->Right.size()) {
-            ss << this->production_->Right[i];
+        if (i < right.size()) {
+            ss << right[i];
         }
-        if (i + 1UL < this->production_->Right.size()) {
+        if (i + 1UL < right.size()) {
             ss << " ";
         }
     }

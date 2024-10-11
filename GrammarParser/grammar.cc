@@ -15,9 +15,10 @@
 const std::string Grammar::EndMark = "#";
 const std::string Grammar::NilMark = "$";
 
+namespace {
+
 std::set<std::shared_ptr<Production>> _InProcess;
 
-namespace {
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> res;
     if ("" == str)
@@ -41,18 +42,19 @@ std::string &trim(std::string &s) {
     s.erase(s.find_last_not_of(" ") + 1);
     return s;
 }
+
 }  // namespace
 
 std::string Production::ToString() const {
     std::stringstream ss;
-    ss << this->Left << " -> ";
-    for (const auto &r : this->Right) {
+    ss << this->left_ << " -> ";
+    for (const auto &r : this->right_) {
         ss << r << " ";
     }
     return ss.str();
 }
 
-int ReadGrammar(std::string filepath, Grammar &grammar) {
+int Grammar::ReadFromFile(const std::string &filepath) {
     std::ifstream is(filepath);
     if (!is) {
         std::cerr << Color::RED << "error: failed to open file '" << filepath << "'." << Color::RESET << std::endl;
@@ -70,35 +72,34 @@ int ReadGrammar(std::string filepath, Grammar &grammar) {
             right.emplace_back(symbol);
         }
         auto newProduction = std::make_shared<Production>(std::move(left), std::move(right), ++productionNumber);
-        grammar.Productions.emplace_back(newProduction);
-        grammar.ProductionIndexes[left].emplace_back(newProduction);
+        productions_.emplace_back(newProduction);
+        productionIndexes_[left].emplace_back(newProduction);
     }
     is.close();
     return 0;
 }
 
-int Grammar::ComputeFirstSet() {
-    for (const auto &kv : this->ProductionIndexes) {
+void Grammar::ComputeFirstSet() {
+    for (const auto &kv : this->productionIndexes_) {
         computeFirstSet(kv.first);
     }
-    return 0;
 }
 
 std::set<std::string> Grammar::computeFirstSet(const std::string &symbol) {
-    if (IsTerminal(symbol)) {
+    if (!IsNonTerminal(symbol)) {
         return {symbol};
     }
-    if (!this->FirstSet[symbol].empty()) {
-        return this->FirstSet[symbol];
+    if (!firstSet_[symbol].empty()) {
+        return firstSet_[symbol];
     }
     std::set<std::string> result;
-    for (auto production : this->ProductionIndexes[symbol]) {
+    for (auto production : this->productionIndexes_[symbol]) {
         if (_InProcess.find(production) != _InProcess.end()) {
             continue;
         }
         _InProcess.insert(production);
         bool needAddNil = true;
-        for (auto right : production->Right) {
+        for (auto right : production->Right()) {
             auto firstSetOfSymbol = computeFirstSet(right);
             result.insert(firstSetOfSymbol.begin(), firstSetOfSymbol.end());
             result.erase(Grammar::NilMark);
@@ -112,6 +113,17 @@ std::set<std::string> Grammar::computeFirstSet(const std::string &symbol) {
         }
         _InProcess.erase(production);
     }
-    this->FirstSet[symbol] = result;
+    firstSet_[symbol] = result;
     return result;
+}
+
+void Grammar::ShowDetails() const {
+    std::cout << "FIRST SET:" << std::endl;
+    for (const auto &kv : firstSet_) {
+        std::cout << kv.first << ": ";
+        for (const auto &symbol : kv.second) {
+            std::cout << symbol << " ";
+        }
+        std::cout << std::endl;
+    }
 }

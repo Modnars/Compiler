@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[]) {
     Grammar grammar;
-    int ret = ReadGrammar(argv[1], grammar);
+    int ret = grammar.ReadFromFile(argv[1]);
     if (ret != 0) {
         std::cerr << Color::RED << "Failed to read grammar." << Color::RESET << std::endl;
     }

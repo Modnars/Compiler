@@ -16,7 +16,9 @@
 #include "parser.h"
 
 namespace lr {
+
 static const std::string DotMark = "·";
+
 class Item;
 class Parser;
 
@@ -26,23 +28,23 @@ class Item {
 
 public:
     Item(std::shared_ptr<const lr0::Item> item, const std::set<std::string> &lookahead)
-        : item_(item), lookahead_(lookahead) { }
+        : lr0Item_(item), lookahead_(lookahead) { }
 
     std::string ToString() const;
 
 public:
-    bool HasNextSymbol() const { return this->item_->HasNextSymbol(); }
+    bool HasNextSymbol() const { return lr0Item_->HasNextSymbol(); }
 
-    const std::string &NextSymbol() const { return this->item_->NextSymbol(); }
+    const std::string &NextSymbol() const { return lr0Item_->NextSymbol(); }
 
-    bool CanReduce() const { return this->item_->CanReduce(); }
+    bool CanReduce() const { return lr0Item_->CanReduce(); }
 
-    std::size_t DotPos() const { return this->item_->DotPos(); }
+    std::size_t DotPos() const { return lr0Item_->DotPos(); }
 
-    const std::vector<std::string> &Right() const { return this->item_->Right(); }
+    const std::vector<std::string> &Right() const { return lr0Item_->Right(); }
 
 private:
-    std::shared_ptr<const lr0::Item> item_ = nullptr;
+    std::shared_ptr<const lr0::Item> lr0Item_ = nullptr;
     std::set<std::string> lookahead_;
 };
 
@@ -50,18 +52,18 @@ bool operator<(const Item &lhs, const Item &rhs);
 
 class ItemSet {
 public:
-    bool Add(std::shared_ptr<const Item> item) { return this->items_.insert(item).second; }
-    bool Contains(std::shared_ptr<const Item> item) const { return this->items_.find(item) != this->items_.end(); }
-    bool Equals(std::shared_ptr<const ItemSet> rhs) const { return this->items_ == rhs->items_; };
+    bool Add(std::shared_ptr<const Item> item) { return items_.insert(item).second; }
+    bool Contains(std::shared_ptr<const Item> item) const { return items_.find(item) != items_.end(); }
+    bool Equals(std::shared_ptr<const ItemSet> rhs) const { return items_ == rhs->items_; };
 
 public:
-    const std::set<std::shared_ptr<const Item>> &Items() const { return this->items_; };
-    std::size_t Number() const { return this->number; }
-    void SetNumber(std::size_t number) { this->number = number; }
+    const std::set<std::shared_ptr<const Item>> &Items() const { return items_; };
+    std::size_t Number() const { return number_; }
+    void SetNumber(std::size_t number) { number_ = number; }
 
 private:
     std::set<std::shared_ptr<const Item>> items_;
-    std::size_t number = 0UL;
+    std::size_t number_ = 0UL;
 };
 
 class Parser {
@@ -80,7 +82,7 @@ public:
 private:
     void makeItems();
 
-    std::shared_ptr<const lr0::Item> lr0Item(std::shared_ptr<Production> p, std::size_t pos) const {
+    std::shared_ptr<const lr0::Item> lr0Item(std::shared_ptr<const Production> p, std::size_t pos) const {
         const auto iter = lr0Items_.find(std::make_pair(p, pos));
         if (iter == lr0Items_.end()) {
             return nullptr;
@@ -108,7 +110,7 @@ private:
         return newItem;
     }
 
-    std::shared_ptr<const Item> newLrItem(std::shared_ptr<Production> p, std::size_t pos,
+    std::shared_ptr<const Item> newLrItem(std::shared_ptr<const Production> p, std::size_t pos,
                                           const std::set<std::string> &lookahead) {
         return newLrItem(lr0Item(p, pos), lookahead);
     }
@@ -123,7 +125,7 @@ private:
 
 private:
     Grammar &grammar_;
-    std::map<std::pair<std::shared_ptr<Production>, std::size_t>, std::shared_ptr<const lr0::Item>> lr0Items_;
+    std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<const lr0::Item>> lr0Items_;
     std::map<std::pair<std::shared_ptr<const lr0::Item>, std::set<std::string>>, std::shared_ptr<const Item>> items_;
     std::map<std::size_t, std::shared_ptr<const ItemSet>> closures_;
     std::size_t closureNum_ = 0UL;

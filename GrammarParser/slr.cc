@@ -12,38 +12,40 @@
 #include "slr.h"
 
 bool operator<(const slr::Item &lhs, const slr::Item &rhs) {
-    return std::tie(lhs.production_, lhs.dot_pos_) < std::tie(rhs.production_, rhs.dot_pos_);
+    return std::tie(lhs.production_, lhs.dotPos_) < std::tie(rhs.production_, rhs.dotPos_);
 }
 
 namespace slr {
+
 std::string Item::ToString() const {
     std::stringstream ss;
-    ss << this->production_->Left << " -> ";
-    for (std::size_t i = 0UL; i <= this->production_->Right.size(); ++i) {
-        if (i == this->dot_pos_) {
+    ss << production_->Left() << " -> ";
+    const auto &right = production_->Right();
+    for (std::size_t i = 0UL; i <= right.size(); ++i) {
+        if (i == dotPos_) {
             ss << slr::DotMark << "";
         }
-        if (i < this->production_->Right.size()) {
-            ss << this->production_->Right[i] << " ";
+        if (i < right.size()) {
+            ss << right[i] << " ";
         }
     }
     return ss.str();
 }
 
 bool Item::HasNextSymbol() const {
-    return this->production_->Right.size() > this->dot_pos_;
+    return production_->Right().size() > dotPos_;
 }
 
 const std::string &Item::NextSymbol() const {
-    static const std::string empty = ""; // return empty string when HasNextSymbol is false
-    if (!this->HasNextSymbol())
+    static const std::string empty = "";  // return empty string when HasNextSymbol is false
+    if (!HasNextSymbol())
         return empty;
-    return this->production_->Right[this->dot_pos_];
+    return production_->Right()[dotPos_];
 }
 
 std::vector<std::shared_ptr<ItemSet>> ItemSet::Shift() const {
     std::map<std::string, std::shared_ptr<ItemSet>> targets;
-    for (auto item : this->items_) {
+    for (auto item : items_) {
         if (item->Shift()) {
             if (targets[item->NextSymbol()] == nullptr)
                 targets[item->NextSymbol()] = std::make_shared<ItemSet>();
@@ -59,13 +61,13 @@ std::vector<std::shared_ptr<ItemSet>> ItemSet::Shift() const {
 }
 
 int Parser::makeItems() {
-    for (auto p : this->productions_) {
+    for (auto p : grammar_.AllProductions()) {
         auto head = NewItem(p, 0UL);
         auto prev = head;
-        item_table_.insert({std::make_pair(p, 0UL), head});
-        for (std::size_t i = 1UL; i <= p->Right.size(); ++i) {
+        itemTable_.insert({std::make_pair(p, 0UL), head});
+        for (std::size_t i = 1UL; i <= p->Right().size(); ++i) {
             auto item = NewItem(p, i, prev);
-            item_table_.insert({std::make_pair(p, i), item});
+            itemTable_.insert({std::make_pair(p, i), item});
             prev = item;
         }
     }
@@ -77,10 +79,7 @@ int Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet) {
     std::set<std::shared_ptr<Item>> added;
     for (auto item : itemSet->Items()) {
         added.insert(item);
-        const auto iter = this->productionIndexes_.find(item->NextSymbol());
-        if (iter == this->productionIndexes_.end())
-            continue;
-        for (auto p : iter->second) {
+        for (auto p : grammar_.GetProductions(item->NextSymbol())) {
             auto newItem = this->item(p, 0UL);
             if (added.find(newItem) == added.end()) {
                 seq.push(newItem);
@@ -94,10 +93,7 @@ int Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet) {
             continue;
         added.insert(item);
         itemSet->Add(item);
-        const auto iter = this->productionIndexes_.find(item->NextSymbol());
-        if (iter == this->productionIndexes_.end())
-            continue;
-        for (auto p : iter->second) {
+        for (auto p : grammar_.GetProductions(item->NextSymbol())) {
             auto newItem = this->item(p, 0UL);
             if (added.find(newItem) == added.end()) {
                 seq.push(newItem);
@@ -109,7 +105,7 @@ int Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet) {
 
 int Parser::calcAllClosure() {
     auto I0 = std::make_shared<ItemSet>();
-    I0->Add(this->item(this->productions_[0], 0UL));
+    I0->Add(this->item(grammar_.AllProductions()[0], 0UL));
     CLOSURE(I0);
 
     std::queue<std::shared_ptr<ItemSet>> seq;
@@ -159,4 +155,5 @@ int Parser::ShowDetails() const {
     }
     return 0;
 }
-} // namespace slr
+
+}  // namespace slr

@@ -15,28 +15,25 @@ namespace lr {
 
 std::string Item::ToString() const {
     std::stringstream ss;
-    for (auto iter = this->lookahead_.begin(); iter != this->lookahead_.end(); ++iter) {
-        if (iter != this->lookahead_.begin()) {
+    for (auto iter = lookahead_.begin(); iter != lookahead_.end(); ++iter) {
+        if (iter != lookahead_.begin()) {
             ss << "/";
         }
         ss << *iter;
     }
-    return "[" + this->item_->ToString() + ", " + ss.str() + "]";
+    return "[" + lr0Item_->ToString() + ", " + ss.str() + "]";
 }
 
 bool operator<(const Item &lhs, const Item &rhs) {
-    return std::tie(lhs.item_, lhs.lookahead_) < std::tie(rhs.item_, rhs.lookahead_);
+    return std::tie(lhs.lr0Item_, lhs.lookahead_) < std::tie(rhs.lr0Item_, rhs.lookahead_);
 }
 
 int Parser::Parse() {
-    int ret = this->grammar_.ComputeFirstSet();
-    if (ret != 0) {
-        return ret;
-    }
+    grammar_.ComputeFirstSet();
     makeItems();
 
     auto I0 = std::make_shared<lr::ItemSet>();
-    I0->Add(newLrItem(this->grammar_.Productions[0], 0UL, {"#"}));
+    I0->Add(newLrItem(grammar_.AllProductions()[0], 0UL, {"#"}));
     CLOSURE(I0);
     I0->SetNumber(closureNum_++);
     closures_.insert({I0->Number(), I0});
@@ -63,23 +60,17 @@ int Parser::Parse() {
 }
 
 void Parser::ShowDetails() const {
-    std::cout << "FIRST SET:" << std::endl;
-    for (const auto &kv : this->grammar_.FirstSet) {
-        std::cout << kv.first << ": ";
-        for (const auto &sym : kv.second) {
-            std::cout << sym << " ";
-        }
-        std::cout << std::endl;
-    }
+    grammar_.ShowDetails();
+
     std::cout << std::endl << "STATE CLOSURE:" << std::endl;
-    for (const auto &kv : this->closures_) {
+    for (const auto &kv : closures_) {
         std::cout << "\nI" << kv.first << ":" << std::endl;
         for (auto item : kv.second->Items()) {
             std::cout << item->ToString() << std::endl;
         }
     }
     std::cout << std::endl << "ACTION TABLE:" << std::endl;
-    for (std::size_t i = 0UL; i < this->actionTable_.size(); ++i) {
+    for (std::size_t i = 0UL; i < actionTable_.size(); ++i) {
         std::cout << i << ":\t";
         for (const auto &kv : actionTable_[i]) {
             std::cout << kv.first << ": " << kv.second << "\t";
@@ -89,13 +80,16 @@ void Parser::ShowDetails() const {
 }
 
 void Parser::makeItems() {
-    for (auto p : this->grammar_.Productions) {
+    for (auto p : grammar_.AllProductions()) {
         auto head = lr0::NewItem(p, 0UL);
         auto prev = head;
-        this->lr0Items_.insert({std::make_pair(p, 0UL), head});
-        for (std::size_t i = 1UL; i <= p->Right.size(); ++i) {
-            auto item = NewItem(p, i, prev);
-            this->lr0Items_.insert({std::make_pair(p, i), item});
+        lr0Items_.insert({std::make_pair(p, 0UL), head});
+        if (prev->CanReduce()) {  // `A -> $` only cache the first item `A -> ·$`
+            continue;
+        }
+        for (std::size_t i = 1UL; i <= p->Right().size(); ++i) {
+            auto item = lr0::NewItem(p, i, prev);
+            lr0Items_.insert({std::make_pair(p, i), item});
             prev = item;
         }
     }
@@ -105,24 +99,25 @@ std::set<std::string> Parser::computeLookahead(std::shared_ptr<const Item> item)
     if (item->CanReduce()) {
         return item->lookahead_;
     }
-    if (item->HasNextSymbol() && grammar_.IsTerminal(item->NextSymbol())) {
+    if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
         return item->lookahead_;
     }
     std::set<std::string> result;
-    std::size_t dotPos = item->item_->DotPos() + 1UL;
-    for (; dotPos < item->item_->Right().size(); ++dotPos) {
-        auto symbol = item->item_->Right()[dotPos];
-        if (grammar_.IsTerminal(symbol)) {
+    std::size_t dotPos = item->lr0Item_->DotPos() + 1UL;
+    for (; dotPos < item->lr0Item_->Right().size(); ++dotPos) {
+        auto symbol = item->lr0Item_->Right()[dotPos];
+        if (!grammar_.IsNonTerminal(symbol)) {
             result.insert(symbol);
             break;
         }
-        if (!grammar_.FirstSet[symbol].count(Grammar::NilMark)) {
-            result.insert(grammar_.FirstSet[symbol].begin(), grammar_.FirstSet[symbol].end());
+        const auto &firstSet = grammar_.FIRST(symbol);
+        if (firstSet.find(Grammar::NilMark) == firstSet.end()) {
+            result.insert(firstSet.begin(), firstSet.end());
             break;
         }
-        result.insert(grammar_.FirstSet[symbol].begin(), grammar_.FirstSet[symbol].end());
+        result.insert(firstSet.begin(), firstSet.end());
     }
-    if (dotPos >= item->item_->Right().size()) {
+    if (dotPos >= item->lr0Item_->Right().size()) {
         result.insert(item->lookahead_.begin(), item->lookahead_.end());
     }
     return result;
@@ -133,7 +128,7 @@ std::shared_ptr<const ItemSet> Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet)
     std::set<std::shared_ptr<const lr::Item>> added;
     for (auto item : itemSet->Items()) {
         added.insert(item);
-        if (grammar_.IsTerminal(item->NextSymbol())) {
+        if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
             continue;
         }
         for (auto production : grammar_.GetProductions(item->NextSymbol())) {
@@ -151,7 +146,7 @@ std::shared_ptr<const ItemSet> Parser::CLOSURE(std::shared_ptr<ItemSet> itemSet)
         }
         added.insert(item);
         itemSet->Add(item);
-        if (!item->HasNextSymbol() || grammar_.IsTerminal(item->NextSymbol())) {
+        if (!item->HasNextSymbol() || !grammar_.IsNonTerminal(item->NextSymbol())) {
             continue;
         }
         for (auto p : grammar_.GetProductions(item->NextSymbol())) {
@@ -168,7 +163,7 @@ std::shared_ptr<const ItemSet> Parser::GOTO(std::shared_ptr<const ItemSet> itemS
     auto result = std::make_shared<ItemSet>();
     for (auto item : itemSet->Items()) {
         if (item->HasNextSymbol() && item->NextSymbol() == shiftSymbol) {
-            result->Add(newLrItem(item->item_->Shift(), item->lookahead_));
+            result->Add(newLrItem(item->lr0Item_->Shift(), item->lookahead_));
         }
     }
     return CLOSURE(result);
@@ -179,22 +174,22 @@ std::map<std::string, std::shared_ptr<ItemSet>> Parser::computeGOTO(std::shared_
     for (auto item : itemSet->Items()) {
         if (item->CanReduce()) {
             for (const auto &symbol : item->lookahead_) {
-                fillActionTable(itemSet->Number(), symbol, -item->item_->GetProduction()->Number());
+                fillActionTable(itemSet->Number(), symbol, -item->lr0Item_->GetProduction()->Number());
             }
             continue;
         }
         if (result[item->NextSymbol()] == nullptr) {
             result[item->NextSymbol()] = std::make_shared<ItemSet>();
         }
-        // result[item->NextSymbol()]->Add(newItem(item->item_->Shift(), computeLookahead(item)));
-        result[item->NextSymbol()]->Add(newLrItem(item->item_->Shift(), item->lookahead_));
+        // result[item->NextSymbol()]->Add(newItem(item->lr0Item_->Shift(), computeLookahead(item)));
+        result[item->NextSymbol()]->Add(newLrItem(item->lr0Item_->Shift(), item->lookahead_));
     }
     return result;
 }
 
 void Parser::fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val) {
-    if (this->actionTable_.size() < stateNum + 1UL) {
-        this->actionTable_.reserve(stateNum + 1UL);
+    if (actionTable_.size() < stateNum + 1UL) {
+        actionTable_.reserve(stateNum + 1UL);
         actionTable_.insert(actionTable_.end(), stateNum + 1UL - actionTable_.size(),
                             std::map<std::string, std::int64_t>());
     }
