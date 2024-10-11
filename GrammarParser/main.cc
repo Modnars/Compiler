@@ -7,6 +7,7 @@
 
 #include "parser.h"
 #include "slr.h"
+#include "lr.h"
 
 int main(int argc, char *argv[]) {
     Grammar grammar;
@@ -14,7 +15,11 @@ int main(int argc, char *argv[]) {
     if (ret != 0) {
         std::cerr << Color::RED << "Failed to read grammar." << Color::RESET << std::endl;
     }
-    slr::Parser parser{grammar};
+    // grammar.CalcFirstSet();
+    // slr::Parser parser{grammar};
+    // parser.Parse();
+    // parser.ShowDetails();
+    lr::Parser parser{grammar};
     parser.Parse();
     parser.ShowDetails();
     return 0;

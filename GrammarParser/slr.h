@@ -11,13 +11,13 @@
 #include <utility>
 #include <vector>
 
-#include "parser.h"
+#include "grammar.h"
 
 namespace slr {
 class Item;
 
 inline std::shared_ptr<Item> NewItem(std::shared_ptr<Production>, std::size_t, std::shared_ptr<Item> prev = nullptr);
-} // namespace slr
+}  // namespace slr
 
 bool operator<(const slr::Item &lhs, const slr::Item &rhs);
 
@@ -29,7 +29,7 @@ class Item {
     friend std::shared_ptr<Item> NewItem(std::shared_ptr<Production>, std::size_t, std::shared_ptr<Item>);
 
 public:
-    Item(std::shared_ptr<Production> production, std::size_t dot_pos) : production_(production), dot_pos_(dot_pos) {}
+    Item(std::shared_ptr<Production> production, std::size_t dot_pos) : production_(production), dot_pos_(dot_pos) { }
 
     std::string ToString() const;
 
@@ -42,7 +42,7 @@ public:
 
 private:
     std::shared_ptr<Production> production_;
-    std::size_t dot_pos_         = 0UL;
+    std::size_t dot_pos_ = 0UL;
     std::shared_ptr<Item> shift_ = nullptr;
 };
 
@@ -104,9 +104,9 @@ private:
 private:
     const std::vector<std::shared_ptr<Production>> &productions_;
     const std::map<std::string, std::vector<std::shared_ptr<Production>>> &productionIndexes_;
-    std::map<std::uint32_t, std::map<std::uint32_t, std::string>> shift_table_; // <I(a), <I(b), mark>>
+    std::map<std::uint32_t, std::map<std::uint32_t, std::string>> shift_table_;  // <I(a), <I(b), mark>>
     std::map<std::pair<std::shared_ptr<Production>, std::size_t>, std::shared_ptr<Item>> item_table_;
     std::map<std::uint32_t, std::shared_ptr<ItemSet>> closures_;
     std::uint32_t closure_id_generator_ = 0U;
 };
-} // namespace slr
+}  // namespace slr
