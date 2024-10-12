@@ -29,11 +29,12 @@ bool operator<(const Item &lhs, const Item &rhs) {
 }
 
 int Parser::Parse() {
-    grammar_.ComputeFirstSet();
-    makeItems();
+    grammar_.ComputeAndCacheFirstSet();
+    grammar_.ComputeAndCacheFollowSet();
+    computeAndCacheItems();
 
     auto I0 = std::make_shared<lr::ItemSet>();
-    I0->Add(newLrItem(grammar_.AllProductions()[0], 0UL, {"#"}));
+    I0->Add(newLrItem(grammar_.AllProductions()[0], 0UL, {Grammar::EndMark}));
     CLOSURE(I0);
     I0->SetNumber(closureNum_++);
     closures_.insert({I0->Number(), I0});
@@ -79,17 +80,17 @@ void Parser::ShowDetails() const {
     }
 }
 
-void Parser::makeItems() {
+void Parser::computeAndCacheItems() {
     for (auto p : grammar_.AllProductions()) {
         auto head = lr0::NewItem(p, 0UL);
         auto prev = head;
-        lr0Items_.insert({std::make_pair(p, 0UL), head});
-        if (prev->CanReduce()) {  // `A -> $` only cache the first item `A -> ·$`
+        lr0Items_.insert({{p, 0UL}, head});
+        if (head->CanReduce()) {  // `A -> ε` only cache the first item `A -> ·ε`
             continue;
         }
         for (std::size_t i = 1UL; i <= p->Right().size(); ++i) {
             auto item = lr0::NewItem(p, i, prev);
-            lr0Items_.insert({std::make_pair(p, i), item});
+            lr0Items_.insert({{p, i}, item});
             prev = item;
         }
     }
@@ -118,6 +119,10 @@ std::set<std::string> Parser::computeLookahead(std::shared_ptr<const Item> item)
         result.insert(firstSet.begin(), firstSet.end());
     }
     if (dotPos >= item->lr0Item_->Right().size()) {
+        result.erase(Grammar::NilMark);
+        // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
+        // Since lookahead is a terminal symbol (`lookahead_` should also be a set of terminal symbols), we can insert
+        // lookahead (`lookahead_`) directly.
         result.insert(item->lookahead_.begin(), item->lookahead_.end());
     }
     return result;
@@ -181,7 +186,6 @@ std::map<std::string, std::shared_ptr<ItemSet>> Parser::computeGOTO(std::shared_
         if (result[item->NextSymbol()] == nullptr) {
             result[item->NextSymbol()] = std::make_shared<ItemSet>();
         }
-        // result[item->NextSymbol()]->Add(newItem(item->lr0Item_->Shift(), computeLookahead(item)));
         result[item->NextSymbol()]->Add(newLrItem(item->lr0Item_->Shift(), item->lookahead_));
     }
     return result;

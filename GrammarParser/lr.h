@@ -80,7 +80,7 @@ public:
     std::shared_ptr<const ItemSet> GOTO(std::shared_ptr<const ItemSet> itemSet, const std::string &shiftSymbol);
 
 private:
-    void makeItems();
+    void computeAndCacheItems();
 
     std::shared_ptr<const lr0::Item> lr0Item(std::shared_ptr<const Production> p, std::size_t pos) const {
         const auto iter = lr0Items_.find(std::make_pair(p, pos));

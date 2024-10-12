@@ -21,8 +21,9 @@ std::set<std::shared_ptr<Production>> _InProcess;
 
 std::vector<std::string> split(const std::string &str, const std::string &delim) {
     std::vector<std::string> res;
-    if ("" == str)
+    if ("" == str) {
         return res;
+    }
     std::string strs = str + delim;
     int pos, size = strs.size();
     for (int i = 0; i < size; ++i) {
@@ -36,10 +37,11 @@ std::vector<std::string> split(const std::string &str, const std::string &delim)
 }
 
 std::string &trim(std::string &s) {
-    if (s.empty())
+    if (s.empty()) {
         return s;
+    }
     s.erase(0, s.find_first_not_of(" "));
-    s.erase(s.find_last_not_of(" ") + 1);
+    s.erase(s.find_last_not_of(" ") + 1UL);
     return s;
 }
 
@@ -79,13 +81,55 @@ int Grammar::ReadFromFile(const std::string &filepath) {
     return 0;
 }
 
-void Grammar::ComputeFirstSet() {
+void Grammar::ComputeAndCacheFirstSet() {
     for (const auto &kv : this->productionIndexes_) {
-        computeFirstSet(kv.first);
+        computeAndCacheFirstSet(kv.first);
     }
 }
 
-std::set<std::string> Grammar::computeFirstSet(const std::string &symbol) {
+void Grammar::ComputeAndCacheFollowSet() {
+    const auto &startSymbol = productions_[0]->Left();
+    for (const auto &kv : productionIndexes_) {
+        followSet_[kv.first] = std::set<std::string>();
+    }
+    bool changed = followSet_[startSymbol].insert(Grammar::EndMark).second;
+    while (changed) {  // until not changed
+        changed = false;
+        for (auto p : productions_) {
+            const auto &left = p->Left();
+            const auto &right = p->Right();
+            for (std::size_t i = 0UL; i < right.size(); ++i) {
+                const auto &B = right[i];
+                if (followSet_.find(B) == followSet_.end()) {  // only focus on non-terminal
+                    continue;
+                }
+                bool containsNil = true;
+                for (std::size_t j = i + 1UL; j < right.size(); ++j) {
+                    const std::string &symbol = right[j];
+                    containsNil = false;
+                    auto firstSetOfSymbol = computeAndCacheFirstSet(symbol);
+                    for (const auto &terminal : firstSetOfSymbol) {
+                        if (terminal == Grammar::NilMark) {
+                            containsNil = true;
+                            continue;
+                        }
+                        changed = followSet_[B].insert(terminal).second;
+                    }
+                    if (!containsNil) {
+                        break;
+                    }
+                }
+                if (containsNil) {
+                    for (const auto &terminal : followSet_[left]) {
+                        changed = followSet_[B].insert(terminal).second;
+                    }
+                }
+            }
+        }
+    }
+}
+
+std::set<std::string> Grammar::computeAndCacheFirstSet(const std::string &symbol) {
     if (!IsNonTerminal(symbol)) {
         return {symbol};
     }
@@ -100,7 +144,7 @@ std::set<std::string> Grammar::computeFirstSet(const std::string &symbol) {
         _InProcess.insert(production);
         bool needAddNil = true;
         for (auto right : production->Right()) {
-            auto firstSetOfSymbol = computeFirstSet(right);
+            auto firstSetOfSymbol = computeAndCacheFirstSet(right);
             result.insert(firstSetOfSymbol.begin(), firstSetOfSymbol.end());
             result.erase(Grammar::NilMark);
             if (firstSetOfSymbol.find(Grammar::NilMark) == firstSetOfSymbol.end()) {
@@ -120,6 +164,16 @@ std::set<std::string> Grammar::computeFirstSet(const std::string &symbol) {
 void Grammar::ShowDetails() const {
     std::cout << "FIRST SET:" << std::endl;
     for (const auto &kv : firstSet_) {
+        std::cout << kv.first << ": ";
+        for (const auto &symbol : kv.second) {
+            std::cout << symbol << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "FOLLOW SET:" << std::endl;
+    for (const auto &kv : followSet_) {
         std::cout << kv.first << ": ";
         for (const auto &symbol : kv.second) {
             std::cout << symbol << " ";

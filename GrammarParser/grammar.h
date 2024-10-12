@@ -43,10 +43,15 @@ public:
     /// @return error code while reading the source file, parsing the productions.
     int ReadFromFile(const std::string &filepath);
 
-    /// @brief Compute nonterminal symbols' FIRST set and cache the result in member `firstSet_`. If you need using
+    /// @brief Compute non-terminal symbols' FIRST set and cache the result in member `firstSet_`. If you need using
     /// grammar's FIRST set, must call the function first.
-    void ComputeFirstSet();
+    void ComputeAndCacheFirstSet();
 
+    /// @brief Compute non-terminal symbols' FOLLOW set and cache the result in member `followSet_`. If you need using
+    /// grammar's FOLLOW set, must call the function first.
+    void ComputeAndCacheFollowSet();
+
+    /// @brief If a symbol appear in the production left part, it's a non-terminal symbol.
     bool IsNonTerminal(const std::string &symbol) const {
         return productionIndexes_.find(symbol) != productionIndexes_.end();
     }
@@ -54,6 +59,7 @@ public:
     /// @brief Get all productions which defined in source grammar file.
     const std::vector<std::shared_ptr<const Production>> &AllProductions() const { return productions_; }
 
+    /// @brief Get all productions whose left part is `symbol`.
     const std::vector<std::shared_ptr<Production>> &GetProductions(const std::string &symbol) const {
         static const std::vector<std::shared_ptr<Production>> empty;
         if (auto iter = productionIndexes_.find(symbol); iter != productionIndexes_.end()) {
@@ -62,12 +68,24 @@ public:
         return empty;
     }
 
-    /// @brief Get target Nonterminal symbol's FIRST set. You should call ComputeFirsetSet before using the funciton.
-    /// @warning Only return the Nonterminal symbols' FIRST set, for the Terminal symbols, their FIRST set is
+    /// @brief Get cached target non-terminal symbol's FIRST set. You should call ComputeAndCacheFirsetSet before using
+    /// the funciton.
+    /// @warning Only return the NON-terminal symbols' FIRST set, for the terminal symbols, their FIRST set is
     /// themselves.
     const std::set<std::string> &FIRST(const std::string &symbol) const {
         static const std::set<std::string> empty;
         if (auto iter = firstSet_.find(symbol); iter != firstSet_.end()) {
+            return iter->second;
+        }
+        return empty;
+    }
+
+    /// @brief Get cached target non-terminal symbol's FOLLOW set. You should call ComputeAndCacheFollowSet before using
+    /// the funciton.
+    /// @warning Only the NON-terminal symbols have FOLLOW set.
+    const std::set<std::string> &FOLLOW(const std::string &symbol) const {
+        static const std::set<std::string> empty;
+        if (auto iter = followSet_.find(symbol); iter != followSet_.end()) {
             return iter->second;
         }
         return empty;
@@ -87,11 +105,6 @@ public:
     void ShowDetails() const;
 
 private:
-    std::vector<std::shared_ptr<const Production>> productions_;
-    std::map<std::string, std::vector<std::shared_ptr<Production>>> productionIndexes_;
-    std::map<std::string, std::set<std::string>> firstSet_;
-
-private:
     bool canGenNil(const std::string &symbol) const {
         auto setIter = firstSet_.find(symbol);
         if (setIter == firstSet_.end()) {
@@ -100,7 +113,13 @@ private:
         return setIter->second.find(Grammar::NilMark) != setIter->second.end();
     }
 
-    std::set<std::string> computeFirstSet(const std::string &symbol);
+    std::set<std::string> computeAndCacheFirstSet(const std::string &symbol);
+
+private:
+    std::vector<std::shared_ptr<const Production>> productions_;
+    std::map<std::string, std::vector<std::shared_ptr<Production>>> productionIndexes_;
+    std::map<std::string, std::set<std::string>> firstSet_;
+    std::map<std::string, std::set<std::string>> followSet_;
 };
 
 int ReadGrammar(std::string filepath, Grammar &grammar);

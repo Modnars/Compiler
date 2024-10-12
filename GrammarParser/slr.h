@@ -25,7 +25,7 @@ bool operator<(const slr::Item &lhs, const slr::Item &rhs);
 namespace slr {
 static const std::string DotMark = "·";
 
-class Item {
+class Item { // TODO use `lr0::Item` directly
     friend bool ::operator<(const Item & lhs, const Item & rhs);
     friend std::shared_ptr<Item> NewItem(std::shared_ptr<const Production>, std::size_t, std::shared_ptr<Item>);
 
