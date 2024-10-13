@@ -19,6 +19,8 @@ public:
 public:
     std::string ToString() const;
 
+    bool operator<(const Production &rhs) const { return number_ < rhs.number_; }
+
 public:
     const std::string &Left() const { return left_; }
 

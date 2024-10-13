@@ -8,6 +8,16 @@
 #include <string>
 #include <vector>
 
+class Color {
+public:
+    static const std::string RESET;
+    static const std::string BLUE;
+    static const std::string GREEN;
+    static const std::string RED;
+    static const std::string WHITE;
+    static const std::string YELLOW;
+};
+
 namespace util {
 
 inline std::vector<std::string> Split(const std::string &str, const std::string &delim) {
@@ -35,5 +45,8 @@ inline std::string &Trim(std::string &s) {
     s.erase(s.find_last_not_of(" ") + 1UL);
     return s;
 }
+
+void LOG_INFO(const char *format, ...);
+void LOG_ERROR(const char *format, ...);
 
 }  // namespace util

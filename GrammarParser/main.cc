@@ -5,21 +5,20 @@
  */
 #include <iostream>
 
-#include "parser.h"
-#include "slr.h"
-#include "lr.h"
+#include "lr1.h"
+#include "util.h"
 
 int main(int argc, char *argv[]) {
     Grammar grammar;
     int ret = grammar.ReadFromFile(argv[1]);
     if (ret != 0) {
-        std::cerr << Color::RED << "Failed to read grammar." << Color::RESET << std::endl;
+        util::LOG_ERROR("Failed to read grammar.");
     }
     // grammar.CalcFirstSet();
     // slr::Parser parser{grammar};
     // parser.Parse();
     // parser.ShowDetails();
-    lr::Parser parser{grammar};
+    mcc::LR1Parser parser{grammar};
     parser.Parse();
     parser.ShowDetails();
     parser.Analyze(std::cin);

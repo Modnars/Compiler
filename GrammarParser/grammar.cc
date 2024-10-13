@@ -34,7 +34,7 @@ std::string Production::ToString() const {
 int Grammar::ReadFromFile(const std::string &filepath) {
     std::ifstream is(filepath);
     if (!is) {
-        std::cerr << Color::RED << "error: failed to open file '" << filepath << "'." << Color::RESET << std::endl;
+        util::LOG_ERROR("error: failed to open file '%s'.", filepath.c_str());
         return -1;
     }
     std::string line;

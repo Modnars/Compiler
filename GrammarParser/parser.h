@@ -10,12 +10,13 @@
 #include <string>
 #include <vector>
 
-class Color {
+namespace mcc {
+
+class Parser {
 public:
-    static const std::string RESET;
-    static const std::string BLUE;
-    static const std::string GREEN;
-    static const std::string RED;
-    static const std::string WHITE;
-    static const std::string YELLOW;
+    virtual int Parse() = 0;
+
+    virtual int Analyze(std::istream &is) const = 0;
 };
+
+}  // namespace mcc

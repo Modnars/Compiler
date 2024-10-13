@@ -13,130 +13,92 @@
 #include <vector>
 
 #include "grammar.h"
-#include "lr0.h"
 #include "parser.h"
 
-namespace lr {
+namespace mcc {
 
-static const std::string DotMark = "·";
-
-class Item;
-class Parser;
-
-class Item {
-    friend bool operator<(const Item &lhs, const Item &rhs);
-    friend class Parser;
+class LR0Item {
+    friend std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
+                                               std::shared_ptr<LR0Item> prev);
 
 public:
-    Item(std::shared_ptr<const lr0::Item> item, const std::set<std::string> &lookahead)
-        : lr0Item_(item), lookahead_(lookahead) { }
+    LR0Item(std::shared_ptr<const Production> production, std::size_t dotPos)
+        : production_(production), dotPos_(dotPos) { }
+
+public:
+    bool operator<(const LR0Item &rhs) const {
+        return std::tie(*production_, dotPos_) < std::tie(*rhs.production_, rhs.dotPos_);
+    }
 
     std::string ToString() const;
 
 public:
-    bool HasNextSymbol() const { return lr0Item_->HasNextSymbol(); }
+    virtual bool HasNextSymbol() const {
+        return production_->Right().size() > dotPos_ && production_->Right().back() != Grammar::NilMark;
+    }
 
-    const std::string &NextSymbol() const { return lr0Item_->NextSymbol(); }
+    virtual const std::string &NextSymbol() const {
+        static const std::string empty = "";  // return empty string when HasNextSymbol is false
+        if (!HasNextSymbol()) {
+            return empty;
+        }
+        return production_->Right()[dotPos_];
+    }
 
-    bool CanReduce() const { return lr0Item_->CanReduce(); }
+    virtual bool CanReduce() const {
+        // return !HasNextSymbol();
+        return dotPos_ >= production_->Right().size() || production_->Right().back() == Grammar::NilMark;
+    }
 
-    std::size_t DotPos() const { return lr0Item_->DotPos(); }
+    virtual std::size_t DotPos() const { return dotPos_; }
 
-    const std::vector<std::string> &Right() const { return lr0Item_->Right(); }
+    virtual const std::vector<std::string> &Right() const { return production_->Right(); }
+
+    virtual std::shared_ptr<const Production> GetProduction() const { return production_; }
+
+    std::shared_ptr<LR0Item> Shift() const { return shift_; }
 
 private:
-    std::shared_ptr<const lr0::Item> lr0Item_ = nullptr;
-    std::set<std::string> lookahead_;
+    std::shared_ptr<const Production> production_;
+    std::size_t dotPos_ = 0UL;
+    std::shared_ptr<LR0Item> shift_ = nullptr;
 };
 
-bool operator<(const Item &lhs, const Item &rhs);
+inline std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
+                                           std::shared_ptr<LR0Item> prev = nullptr) {
+    auto newItem = std::make_shared<LR0Item>(production, dotPos);
+    if (prev) {
+        prev->shift_ = newItem;
+    }
+    return newItem;
+}
 
+template <typename _Item>
 class ItemSet {
 public:
-    bool Add(std::shared_ptr<const Item> item) { return items_.insert(item).second; }
-    bool Contains(std::shared_ptr<const Item> item) const { return items_.find(item) != items_.end(); }
+    bool Add(std::shared_ptr<const _Item> item) { return items_.insert(item).second; }
+    bool Contains(std::shared_ptr<const _Item> item) const { return items_.find(item) != items_.end(); }
     bool Equals(std::shared_ptr<const ItemSet> rhs) const { return items_ == rhs->items_; };
 
 public:
-    const std::set<std::shared_ptr<const Item>> &Items() const { return items_; };
+    const std::set<std::shared_ptr<const _Item>> &Items() const { return items_; };
     std::size_t Number() const { return number_; }
     void SetNumber(std::size_t number) { number_ = number; }
 
 private:
-    std::set<std::shared_ptr<const Item>> items_;
+    std::set<std::shared_ptr<const _Item>> items_;
     std::size_t number_ = 0UL;
 };
 
-class Parser {
+class LRParser : public mcc::Parser {
 public:
-    Parser(Grammar &grammar) : grammar_(grammar) { }
+    LRParser(Grammar &grammar) : grammar_(grammar) { }
 
-public:
-    int Parse();
-
-    int Analyze(std::istream &is) const;
-
-    void ShowDetails() const;
-
-    std::shared_ptr<const ItemSet> CLOSURE(std::shared_ptr<ItemSet> itemSet);
-
-    std::shared_ptr<const ItemSet> GOTO(std::shared_ptr<const ItemSet> itemSet, const std::string &shiftSymbol);
-
-private:
-    void computeAndCacheItems();
-
-    std::shared_ptr<const lr0::Item> lr0Item(std::shared_ptr<const Production> p, std::size_t pos) const {
-        const auto iter = lr0Items_.find(std::make_pair(p, pos));
-        if (iter == lr0Items_.end()) {
-            return nullptr;
-        }
-        return iter->second;
-    }
-
-    std::shared_ptr<const Item> lr1Item(std::shared_ptr<const lr0::Item> item,
-                                        const std::set<std::string> &lookahead) const {
-        const auto iter = items_.find(std::make_pair(item, lookahead));
-        if (iter == items_.end()) {
-            return nullptr;
-        }
-        return iter->second;
-    }
-
-    std::shared_ptr<const Item> newLrItem(std::shared_ptr<const lr0::Item> lr0It,
-                                          const std::set<std::string> &lookahead) {
-        auto newItem = lr1Item(lr0It, lookahead);
-        if (newItem != nullptr) {
-            return newItem;
-        }
-        newItem = std::make_shared<const Item>(lr0It, lookahead);
-        this->items_.insert({{lr0It, lookahead}, newItem});
-        return newItem;
-    }
-
-    std::shared_ptr<const Item> newLrItem(std::shared_ptr<const Production> p, std::size_t pos,
-                                          const std::set<std::string> &lookahead) {
-        return newLrItem(lr0Item(p, pos), lookahead);
-    }
-
-    std::set<std::string> computeLookahead(std::shared_ptr<const Item> item) const;
-
-    std::map<std::string, std::shared_ptr<ItemSet>> computeGOTO(std::shared_ptr<const ItemSet> itemSet);
-
-    void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
-
-    int queryActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
-
-private:
+protected:
     Grammar &grammar_;
-    std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<const lr0::Item>> lr0Items_;
-    std::map<std::pair<std::shared_ptr<const lr0::Item>, std::set<std::string>>, std::shared_ptr<const Item>> items_;
-    std::map<std::size_t, std::shared_ptr<const ItemSet>> closures_;
-    std::size_t closureNum_ = 0UL;
+    std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<LR0Item>> lr0Items_;
 
     std::vector<std::map<std::string, std::int64_t>> actionTable_;
-
-    std::stack<std::size_t> stateStack_;
-    std::stack<std::string> symbolStack_;
 };
 
-}  // namespace lr
+}  // namespace mcc
