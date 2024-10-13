@@ -7,9 +7,11 @@
 #include <iostream>
 #include <queue>
 #include <sstream>
+#include <string>
 
 #include "grammar.h"
 #include "lr.h"
+#include "util.h"
 
 namespace lr {
 
@@ -46,7 +48,7 @@ int Parser::Parse() {
         for (const auto &kv : computeGOTO(itemSet)) {
             CLOSURE(kv.second);
             auto iter = std::find_if(closures_.begin(), closures_.end(),
-                                     [&kv](auto &&closure) { return closure.second->Items() == kv.second->Items(); });
+                                     [&kv](auto &&closure) { return closure.second->Equals(kv.second); });
             if (iter == closures_.end()) {
                 kv.second->SetNumber(closureNum_++);
                 closures_.insert({kv.second->Number(), kv.second});
@@ -55,6 +57,60 @@ int Parser::Parse() {
             } else {
                 fillActionTable(itemSet->Number(), kv.first, iter->second->Number());
             }
+        }
+    }
+    return 0;
+}
+
+int Parser::Analyze(std::istream &is) const {
+    std::string line;
+    while (std::getline(is, line)) {
+        std::stack<std::size_t> stateStack;
+
+        stateStack.push(0UL);
+
+        auto tokens = util::Split(line, " ");
+        tokens.emplace_back(Grammar::EndMark);
+        std::cout << "tokens: ";
+        for (const auto &tok : tokens) {
+            std::cout << tok << " ";
+        }
+        std::cout << std::endl;
+        bool acceptSucc = true;
+        std::size_t idx = 0UL;
+        while (idx < tokens.size()) {
+            std::int64_t val;
+            if (auto ret = queryActionTable(stateStack.top(), tokens[idx], val); ret != 0) {
+                acceptSucc = false;
+                break;
+            }
+            if (val >= 0) {
+                stateStack.push(val);
+                ++idx;
+            } else {
+                if (val == -1L && tokens[idx] == Grammar::EndMark) {
+                    acceptSucc = true;
+                    break;
+                }
+                auto reduceProduction = grammar_.GetProduction(-static_cast<int32_t>(val));
+                std::cout << "[REDUCE] " << reduceProduction->ToString() << std::endl;
+                if (reduceProduction->Right()[0] != Grammar::NilMark) {
+                    for (std::size_t i = 0UL; i < reduceProduction->Right().size(); ++i) {
+                        stateStack.pop();
+                    }
+                }
+                if (auto ret = queryActionTable(stateStack.top(), reduceProduction->Left(), val); ret != 0) {
+                    acceptSucc = false;
+                    break;
+                } else {
+                    stateStack.push(static_cast<std::size_t>(val));
+                }
+            }
+        }
+        if (acceptSucc) {
+            std::cerr << Color::GREEN << "ACCEPT" << Color::RESET << std::endl;
+        } else {
+            std::cerr << Color::RED << "ANALYZE FAILED" << Color::RESET << std::endl;
         }
     }
     return 0;
@@ -202,6 +258,18 @@ void Parser::fillActionTable(std::size_t stateNum, const std::string &symbol, st
         return;
     }
     actionTable_[stateNum][symbol] = val;
+}
+
+int Parser::queryActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const {
+    if (stateNum >= actionTable_.size()) {
+        return -1;
+    }
+    auto iter = actionTable_[stateNum].find(symbol);
+    if (iter == actionTable_[stateNum].end()) {
+        return -1;
+    }
+    val = iter->second;
+    return 0;
 }
 
 }  // namespace lr

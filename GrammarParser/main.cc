@@ -22,5 +22,6 @@ int main(int argc, char *argv[]) {
     lr::Parser parser{grammar};
     parser.Parse();
     parser.ShowDetails();
+    parser.Analyze(std::cin);
     return 0;
 }

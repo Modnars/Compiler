@@ -11,6 +11,7 @@
 #include "grammar.h"
 #include "lr0.h"
 #include "parser.h"
+#include "util.h"
 
 const std::string Grammar::EndMark = "#";
 const std::string Grammar::NilMark = "$";
@@ -18,32 +19,6 @@ const std::string Grammar::NilMark = "$";
 namespace {
 
 std::set<std::shared_ptr<Production>> _InProcess;
-
-std::vector<std::string> split(const std::string &str, const std::string &delim) {
-    std::vector<std::string> res;
-    if ("" == str) {
-        return res;
-    }
-    std::string strs = str + delim;
-    int pos, size = strs.size();
-    for (int i = 0; i < size; ++i) {
-        pos = strs.find(delim, i);
-        if (pos < size) {
-            res.emplace_back(strs.substr(i, pos - i));
-            i = pos + delim.size() - 1;
-        }
-    }
-    return res;
-}
-
-std::string &trim(std::string &s) {
-    if (s.empty()) {
-        return s;
-    }
-    s.erase(0, s.find_first_not_of(" "));
-    s.erase(s.find_last_not_of(" ") + 1UL);
-    return s;
-}
 
 }  // namespace
 
@@ -65,12 +40,12 @@ int Grammar::ReadFromFile(const std::string &filepath) {
     std::string line;
     std::int32_t productionNumber = 0;
     while (getline(is, line)) {
-        auto tmpVec = split(line, "->");
-        std::string left = trim(tmpVec[0]);
+        auto tmpVec = util::Split(line, "->");
+        std::string left = util::Trim(tmpVec[0]);
         std::vector<std::string> right;
-        tmpVec = split(trim(tmpVec[1]), " ");
+        tmpVec = util::Split(util::Trim(tmpVec[1]), " ");
         for (int i = 0; i < tmpVec.size(); ++i) {
-            auto symbol = trim(tmpVec[i]);
+            auto symbol = util::Trim(tmpVec[i]);
             right.emplace_back(symbol);
         }
         auto newProduction = std::make_shared<Production>(std::move(left), std::move(right), ++productionNumber);
@@ -99,8 +74,8 @@ void Grammar::ComputeAndCacheFollowSet() {
             const auto &left = p->Left();
             const auto &right = p->Right();
             for (std::size_t i = 0UL; i < right.size(); ++i) {
-                const auto &B = right[i];
-                if (followSet_.find(B) == followSet_.end()) {  // only focus on non-terminal
+                const auto &target = right[i];
+                if (followSet_.find(target) == followSet_.end()) {  // only focus on non-terminal
                     continue;
                 }
                 bool containsNil = true;
@@ -113,7 +88,7 @@ void Grammar::ComputeAndCacheFollowSet() {
                             containsNil = true;
                             continue;
                         }
-                        changed = followSet_[B].insert(terminal).second;
+                        changed = followSet_[target].insert(terminal).second;
                     }
                     if (!containsNil) {
                         break;
@@ -121,7 +96,7 @@ void Grammar::ComputeAndCacheFollowSet() {
                 }
                 if (containsNil) {
                     for (const auto &terminal : followSet_[left]) {
-                        changed = followSet_[B].insert(terminal).second;
+                        changed = followSet_[target].insert(terminal).second;
                     }
                 }
             }

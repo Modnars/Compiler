@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <stack>
 #include <vector>
 
 #include "grammar.h"
@@ -73,6 +74,8 @@ public:
 public:
     int Parse();
 
+    int Analyze(std::istream &is) const;
+
     void ShowDetails() const;
 
     std::shared_ptr<const ItemSet> CLOSURE(std::shared_ptr<ItemSet> itemSet);
@@ -131,6 +134,9 @@ private:
     std::size_t closureNum_ = 0UL;
 
     std::vector<std::map<std::string, std::int64_t>> actionTable_;
+
+    std::stack<std::size_t> stateStack_;
+    std::stack<std::string> symbolStack_;
 };
 
 }  // namespace lr
