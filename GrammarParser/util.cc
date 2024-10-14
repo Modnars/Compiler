@@ -41,6 +41,17 @@ void LOG_INFO(const char *format, ...) {
     fprintf(stderr, "%s\n", RESET);
 }
 
+void LOG_WARN(const char *format, ...) {
+    fprintf(stderr, "%s", YELLOW);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "%s\n", RESET);
+}
+
 void LOG_ERROR(const char *format, ...) {
     fprintf(stderr, "%s", RED);
 

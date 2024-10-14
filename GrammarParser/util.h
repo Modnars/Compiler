@@ -56,6 +56,7 @@ inline std::string &Trim(std::string &s) {
 
 void LOG_TRACE(const char *format, ...);
 void LOG_INFO(const char *format, ...);
+void LOG_WARN(const char *format, ...);
 void LOG_ERROR(const char *format, ...);
 
 }  // namespace util

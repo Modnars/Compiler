@@ -57,12 +57,18 @@ int Grammar::ReadFromFile(const std::string &filepath) {
 }
 
 void Grammar::ComputeAndCacheFirstSet() {
+    if (!firstSet_.empty()) {
+        return;
+    }
     for (const auto &kv : this->productionIndexes_) {
         computeAndCacheFirstSet(kv.first);
     }
 }
 
 void Grammar::ComputeAndCacheFollowSet() {
+    if (!followSet_.empty()) {
+        return;
+    }
     const auto &startSymbol = productions_[0]->Left();
     for (const auto &kv : productionIndexes_) {
         followSet_[kv.first] = std::set<std::string>();

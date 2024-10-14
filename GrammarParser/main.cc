@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "lr1.h"
+#include "slr.h"
 #include "util.h"
 
 void usage() {
@@ -23,11 +24,8 @@ int main(int argc, char *argv[]) {
         util::LOG_ERROR("Failed to read grammar.");
         exit(1);
     }
-    // grammar.CalcFirstSet();
-    // slr::Parser parser{grammar};
-    // parser.Parse();
-    // parser.ShowDetails();
-    mcc::LR1Parser parser{grammar};
+    // mcc::LR1Parser parser{grammar};
+    mcc::SLRParser parser{grammar};
     parser.Parse();
     parser.ShowDetails();
     parser.Analyze(std::cin);

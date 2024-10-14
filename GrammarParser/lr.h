@@ -98,6 +98,16 @@ public:
     virtual int Analyze(std::istream &is) const override;
 
 protected:
+    void computeAndCacheLr0Items();
+
+    std::shared_ptr<const LR0Item> lr0Item(std::shared_ptr<const Production> p, std::size_t pos) const {
+        const auto iter = lr0Items_.find(std::make_pair(p, pos));
+        if (iter == lr0Items_.end()) {
+            return nullptr;
+        }
+        return iter->second;
+    }
+
     void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
 
     int searchActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
@@ -107,6 +117,7 @@ protected:
     std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<LR0Item>> lr0Items_;
 
     std::vector<std::map<std::string, std::int64_t>> actionTable_;
+    bool parsedSucc_ = true;
 };
 
 }  // namespace mcc

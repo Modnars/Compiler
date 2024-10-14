@@ -40,6 +40,9 @@ std::string LR0Item::ToString() const {
 }
 
 int LRParser::Analyze(std::istream &is) const {
+    if (!parsedSucc_) {
+        util::LOG_WARN("[WARNING] grammar parsed failed, so the analyzing result is not valuable");
+    }
     std::string line;
     while (std::getline(is, line)) {
         std::stack<std::size_t> stateStack;
@@ -93,6 +96,22 @@ int LRParser::Analyze(std::istream &is) const {
     return 0;
 }
 
+void LRParser::computeAndCacheLr0Items() {
+    for (auto p : grammar_.AllProductions()) {
+        auto head = NewLR0Item(p, 0UL);
+        auto prev = head;
+        lr0Items_.insert({{p, 0UL}, head});
+        if (head->CanReduce()) {  // `A -> ε` only cache the first item `A -> ·ε`
+            continue;
+        }
+        for (std::size_t i = 1UL; i <= p->Right().size(); ++i) {
+            auto item = NewLR0Item(p, i, prev);
+            lr0Items_.insert({{p, i}, item});
+            prev = item;
+        }
+    }
+}
+
 void LRParser::fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val) {
     if (actionTable_.size() < stateNum + 1UL) {
         actionTable_.reserve(stateNum + 1UL);
@@ -100,7 +119,8 @@ void LRParser::fillActionTable(std::size_t stateNum, const std::string &symbol, 
                             std::map<std::string, std::int64_t>());
     }
     if (actionTable_[stateNum].find(symbol) != actionTable_[stateNum].end()) {
-        util::LOG_ERROR("conflict!");
+        util::LOG_ERROR("[ERROR] Action conflict!");
+        parsedSucc_ = false;
         return;
     }
     actionTable_[stateNum][symbol] = val;

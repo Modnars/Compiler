@@ -54,16 +54,6 @@ public:
     void ShowDetails() const;
 
 private:
-    void computeAndCacheItems();
-
-    std::shared_ptr<const LR0Item> lr0Item(std::shared_ptr<const Production> p, std::size_t pos) const {
-        const auto iter = lr0Items_.find(std::make_pair(p, pos));
-        if (iter == lr0Items_.end()) {
-            return nullptr;
-        }
-        return iter->second;
-    }
-
     std::shared_ptr<const LR1Item> newLr1Item(std::shared_ptr<const LR0Item> lr0It,
                                               const std::set<std::string> &lookahead) {
         const auto iter = items_.find({lr0It, lookahead});

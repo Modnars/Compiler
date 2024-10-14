@@ -26,8 +26,7 @@ std::string LR1Item::ToString() const {
 
 int LR1Parser::Parse() {
     grammar_.ComputeAndCacheFirstSet();
-    grammar_.ComputeAndCacheFollowSet();
-    computeAndCacheItems();
+    computeAndCacheLr0Items();
 
     auto I0 = std::make_shared<ItemSet<LR1Item>>();
     I0->Add(newLr1Item(lr0Item(grammar_.AllProductions()[0], 0UL), {Grammar::EndMark}));
@@ -53,6 +52,10 @@ int LR1Parser::Parse() {
             }
         }
     }
+    if (!parsedSucc_) {
+        util::LOG_ERROR("[ERROR] the grammar is not an LR(1) grammar for there is a parsing conflict");
+        return 1;
+    }
     return 0;
 }
 
@@ -73,22 +76,6 @@ void LR1Parser::ShowDetails() const {
             std::cout << kv.first << ": " << kv.second << "\t";
         }
         std::cout << std::endl;
-    }
-}
-
-void LR1Parser::computeAndCacheItems() {
-    for (auto p : grammar_.AllProductions()) {
-        auto head = NewLR0Item(p, 0UL);
-        auto prev = head;
-        lr0Items_.insert({{p, 0UL}, head});
-        if (head->CanReduce()) {  // `A -> ε` only cache the first item `A -> ·ε`
-            continue;
-        }
-        for (std::size_t i = 1UL; i <= p->Right().size(); ++i) {
-            auto item = NewLR0Item(p, i, prev);
-            lr0Items_.insert({{p, i}, item});
-            prev = item;
-        }
     }
 }
 
