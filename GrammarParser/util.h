@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -20,21 +21,28 @@ public:
 
 namespace util {
 
-inline std::vector<std::string> Split(const std::string &str, const std::string &delim) {
-    std::vector<std::string> res;
-    if ("" == str) {
-        return res;
-    }
-    std::string strs = str + delim;
-    int pos, size = strs.size();
-    for (int i = 0; i < size; ++i) {
-        pos = strs.find(delim, i);
-        if (pos < size) {
-            res.emplace_back(strs.substr(i, pos - i));
-            i = pos + delim.size() - 1;
+inline std::vector<std::string> Split(const std::string &str, const std::string &delimiter) {
+    std::vector<std::string> tokens;
+
+    if (delimiter.empty()) {
+        for (auto ch: str) {
+            tokens.emplace_back(std::string(1, ch));
         }
+        return tokens;
     }
-    return res;
+
+    std::size_t start = 0;
+    std::size_t end = str.find(delimiter);
+
+    while (end != std::string::npos) {
+        tokens.push_back(str.substr(start, end - start));
+        start = end + delimiter.size();
+        end = str.find(delimiter, start);
+    }
+
+    tokens.push_back(str.substr(start));
+
+    return tokens;
 }
 
 inline std::string &Trim(std::string &s) {
@@ -46,6 +54,7 @@ inline std::string &Trim(std::string &s) {
     return s;
 }
 
+void LOG_TRACE(const char *format, ...);
 void LOG_INFO(const char *format, ...);
 void LOG_ERROR(const char *format, ...);
 

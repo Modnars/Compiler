@@ -8,11 +8,20 @@
 #include "lr1.h"
 #include "util.h"
 
+void usage() {
+    std::cout << "usage: GrammarParser filepath" << std::endl;
+}
+
 int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        usage();
+        exit(1);
+    }
     Grammar grammar;
     int ret = grammar.ReadFromFile(argv[1]);
     if (ret != 0) {
         util::LOG_ERROR("Failed to read grammar.");
+        exit(1);
     }
     // grammar.CalcFirstSet();
     // slr::Parser parser{grammar};

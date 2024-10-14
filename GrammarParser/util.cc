@@ -21,6 +21,15 @@ const char *YELLOW = "\e[1;33m";
 
 namespace util {
 
+void LOG_TRACE(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    fprintf(stderr, "\n");
+}
+
 void LOG_INFO(const char *format, ...) {
     fprintf(stderr, "%s", GREEN);
 

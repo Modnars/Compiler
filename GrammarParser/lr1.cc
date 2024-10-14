@@ -30,7 +30,7 @@ int LR1Parser::Parse() {
     computeAndCacheItems();
 
     auto I0 = std::make_shared<ItemSet<LR1Item>>();
-    I0->Add(newLr1Item(grammar_.AllProductions()[0], 0UL, {Grammar::EndMark}));
+    I0->Add(newLr1Item(lr0Item(grammar_.AllProductions()[0], 0UL), {Grammar::EndMark}));
     CLOSURE(I0);
     I0->SetNumber(closureNum_++);
     closures_.insert({I0->Number(), I0});
@@ -63,7 +63,7 @@ int LR1Parser::Analyze(std::istream &is) const {
 
         stateStack.push(0UL);
 
-        auto tokens = util::Split(line, " ");
+        auto tokens = util::Split(util::Trim(line), " ");
         tokens.emplace_back(Grammar::EndMark);
         std::cout << "tokens: ";
         for (const auto &tok : tokens) {
@@ -87,7 +87,7 @@ int LR1Parser::Analyze(std::istream &is) const {
                     break;
                 }
                 auto reduceProduction = grammar_.GetProduction(-static_cast<int32_t>(val));
-                std::cout << "[REDUCE] " << reduceProduction->ToString() << std::endl;
+                util::LOG_TRACE("[REDUCE] %s", reduceProduction->ToString().c_str());
                 if (reduceProduction->Right()[0] != Grammar::NilMark) {
                     for (std::size_t i = 0UL; i < reduceProduction->Right().size(); ++i) {
                         stateStack.pop();
@@ -104,7 +104,7 @@ int LR1Parser::Analyze(std::istream &is) const {
         if (acceptSucc) {
             util::LOG_INFO("ACCEPT");
         } else {
-            util::LOG_INFO("ANALYZE FAILED");
+            util::LOG_ERROR("ANALYZE FAILED");
         }
     }
     return 0;
@@ -187,7 +187,7 @@ std::shared_ptr<const ItemSet<LR1Item>> LR1Parser::CLOSURE(std::shared_ptr<ItemS
             continue;
         }
         for (auto production : grammar_.GetProductions(item->NextSymbol())) {
-            auto newItem = newLr1Item(production, 0UL, computeLookahead(item));
+            auto newItem = newLr1Item(lr0Item(production, 0UL), computeLookahead(item));
             if (added.find(newItem) == added.end()) {
                 seq.push(newItem);
             }
@@ -205,7 +205,7 @@ std::shared_ptr<const ItemSet<LR1Item>> LR1Parser::CLOSURE(std::shared_ptr<ItemS
             continue;
         }
         for (auto p : grammar_.GetProductions(item->NextSymbol())) {
-            auto newItem = newLr1Item(p, 0UL, computeLookahead(item));
+            auto newItem = newLr1Item(lr0Item(p, 0UL), computeLookahead(item));
             if (added.find(newItem) == added.end()) {
                 seq.push(newItem);
             }

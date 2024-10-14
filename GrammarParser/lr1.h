@@ -66,22 +66,13 @@ private:
         return iter->second;
     }
 
-    std::shared_ptr<const LR1Item> lr1Item(std::shared_ptr<const LR0Item> item,
-                                           const std::set<std::string> &lookahead) const {
-        const auto iter = items_.find(std::make_pair(item, lookahead));
-        if (iter == items_.end()) {
-            return nullptr;
-        }
-        return iter->second;
-    }
-
     std::shared_ptr<const LR1Item> newLr1Item(std::shared_ptr<const LR0Item> lr0It,
                                               const std::set<std::string> &lookahead) {
-        auto newItem = lr1Item(lr0It, lookahead);
-        if (newItem != nullptr) {
-            return newItem;
+        const auto iter = items_.find({lr0It, lookahead});
+        if (iter != items_.end()) {
+            return iter->second;
         }
-        newItem = std::make_shared<const LR1Item>(lr0It, lookahead);
+        auto newItem = std::make_shared<const LR1Item>(lr0It, lookahead);
         this->items_.insert({{lr0It, lookahead}, newItem});
         return newItem;
     }
