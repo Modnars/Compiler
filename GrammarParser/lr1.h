@@ -45,8 +45,6 @@ public:
 public:
     virtual int Parse() override;
 
-    virtual int Analyze(std::istream &is) const override;
-
 public:
     std::shared_ptr<const ItemSet<LR1Item>> CLOSURE(std::shared_ptr<ItemSet<LR1Item>> itemSet);
 
@@ -77,27 +75,15 @@ private:
         return newItem;
     }
 
-    std::shared_ptr<const LR1Item> newLr1Item(std::shared_ptr<const Production> p, std::size_t pos,
-                                              const std::set<std::string> &lookahead) {
-        return newLr1Item(lr0Item(p, pos), lookahead);
-    }
-
     std::set<std::string> computeLookahead(std::shared_ptr<const LR1Item> item) const;
 
     std::map<std::string, std::shared_ptr<ItemSet<LR1Item>>> computeGOTO(
         std::shared_ptr<const ItemSet<LR1Item>> itemSet);
 
-    void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
-
-    int searchActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
-
 private:
-    std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<const LR0Item>> lr0Items_;
     std::map<std::pair<std::shared_ptr<const LR0Item>, std::set<std::string>>, std::shared_ptr<const LR1Item>> items_;
     std::map<std::size_t, std::shared_ptr<const ItemSet<LR1Item>>> closures_;
     std::size_t closureNum_ = 0UL;
-
-    std::vector<std::map<std::string, std::int64_t>> actionTable_;
 };
 
 }  // namespace mcc

@@ -1,0 +1,6 @@
+int
+int int
+id
+id [] []
+int [] []
+id [ int ] [ int ]

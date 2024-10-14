@@ -94,6 +94,14 @@ class LRParser : public mcc::Parser {
 public:
     LRParser(Grammar &grammar) : grammar_(grammar) { }
 
+public:
+    virtual int Analyze(std::istream &is) const override;
+
+protected:
+    void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
+
+    int searchActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
+
 protected:
     Grammar &grammar_;
     std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<LR0Item>> lr0Items_;
