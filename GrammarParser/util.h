@@ -9,23 +9,16 @@
 #include <string>
 #include <vector>
 
-class Color {
-public:
-    static const std::string RESET;
-    static const std::string BLUE;
-    static const std::string GREEN;
-    static const std::string RED;
-    static const std::string WHITE;
-    static const std::string YELLOW;
-};
-
 namespace util {
+
+static bool IsVerboseMode = false;
+static bool IsDebugMode = false;
 
 inline std::vector<std::string> Split(const std::string &str, const std::string &delimiter) {
     std::vector<std::string> tokens;
 
     if (delimiter.empty()) {
-        for (auto ch: str) {
+        for (auto ch : str) {
             tokens.emplace_back(std::string(1, ch));
         }
         return tokens;
@@ -52,6 +45,14 @@ inline std::string &Trim(std::string &s) {
     s.erase(0, s.find_first_not_of(" "));
     s.erase(s.find_last_not_of(" ") + 1UL);
     return s;
+}
+
+template <typename _Cntr>
+inline void PrintSTLContainter(const _Cntr &cntr) {
+    for (auto iter = cntr.begin(); iter != cntr.end(); ++iter) {
+        std::cout << *iter << " ";
+    }
+    std::cout << std::endl;
 }
 
 void LOG_TRACE(const char *format, ...);

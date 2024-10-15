@@ -103,6 +103,9 @@ public:
         return productions_[static_cast<std::size_t>(number - 1)];
     }
 
+    std::set<std::string> ComputeFirstSet(std::vector<std::string>::const_iterator begin,
+                                           std::vector<std::string>::const_iterator end) const;
+
     /// @brief Print the brief information of the grammar.
     void ShowDetails() const;
 

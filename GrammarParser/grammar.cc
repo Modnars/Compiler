@@ -24,8 +24,8 @@ std::set<std::shared_ptr<Production>> _InProcess;
 
 std::string Production::ToString() const {
     std::stringstream ss;
-    ss << this->left_ << " -> ";
-    for (std::size_t i = 0UL; i < this->right_.size(); ++i) {
+    ss << left_ << " -> ";
+    for (std::size_t i = 0UL; i < right_.size(); ++i) {
         ss << right_[i];
         if (i + 1UL < right_.size()) {
             ss << " ";
@@ -35,14 +35,18 @@ std::string Production::ToString() const {
 }
 
 int Grammar::ReadFromFile(const std::string &filepath) {
-    std::ifstream is(filepath);
-    if (!is) {
+    if (!productions_.empty()) {
+        util::LOG_ERROR("[ERROR] already contains productions");
+        return -1;
+    }
+    std::ifstream ifs(filepath);
+    if (!ifs) {
         util::LOG_ERROR("error: failed to open file '%s'.", filepath.c_str());
         return -1;
     }
     std::string line;
     std::int32_t productionNumber = 0;
-    while (getline(is, line)) {
+    while (getline(ifs, line)) {
         auto tmpVec = util::Split(line, "->");
         std::string left = util::Trim(tmpVec[0]);
         std::vector<std::string> right;
@@ -55,7 +59,7 @@ int Grammar::ReadFromFile(const std::string &filepath) {
         productions_.emplace_back(newProduction);
         productionIndexes_[left].emplace_back(newProduction);
     }
-    is.close();
+    ifs.close();
     return 0;
 }
 
@@ -63,7 +67,7 @@ void Grammar::ComputeAndCacheFirstSet() {
     if (!firstSet_.empty()) {
         return;
     }
-    for (const auto &kv : this->productionIndexes_) {
+    for (const auto &kv : productionIndexes_) {
         computeAndCacheFirstSet(kv.first);
     }
 }
@@ -121,7 +125,7 @@ std::set<std::string> Grammar::computeAndCacheFirstSet(const std::string &symbol
         return firstSet_[symbol];
     }
     std::set<std::string> result;
-    for (auto production : this->productionIndexes_[symbol]) {
+    for (auto production : productionIndexes_[symbol]) {
         if (_InProcess.find(production) != _InProcess.end()) {
             continue;
         }
@@ -142,6 +146,30 @@ std::set<std::string> Grammar::computeAndCacheFirstSet(const std::string &symbol
         _InProcess.erase(production);
     }
     firstSet_[symbol] = result;
+    return result;
+}
+
+std::set<std::string> Grammar::ComputeFirstSet(std::vector<std::string>::const_iterator begin,
+                                               std::vector<std::string>::const_iterator end) const {
+    std::set<std::string> result;
+    bool containsNil = false;
+    for (auto iter = begin; iter != end; ++iter) {
+        if (IsNonTerminal(*iter)) {
+            const auto &firsetSet = FIRST(*iter);
+            containsNil = firsetSet.count(Grammar::NilMark);
+            result.insert(firsetSet.begin(), firsetSet.end());
+        } else {
+            containsNil = (*iter == Grammar::NilMark);
+            result.insert(*iter);
+        }
+        result.erase(Grammar::NilMark);
+        if (!containsNil) {
+            break;
+        }
+    }
+    if (containsNil) {
+        result.insert(Grammar::NilMark);
+    }
     return result;
 }
 

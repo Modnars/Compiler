@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -17,6 +18,10 @@ public:
     virtual int Parse() = 0;
 
     virtual int Analyze(std::istream &is) const = 0;
+
+public:
+    virtual void OutputToGraphviz(std::ostream &os) const { }
+    virtual void OutputToCsv(std::ostream &os) const { }
 };
 
 }  // namespace mcc

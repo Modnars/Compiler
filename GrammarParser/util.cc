@@ -22,6 +22,9 @@ const char *YELLOW = "\e[1;33m";
 namespace util {
 
 void LOG_TRACE(const char *format, ...) {
+    if (!IsVerboseMode) {
+        return;
+    }
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);

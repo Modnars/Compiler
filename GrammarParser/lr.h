@@ -8,10 +8,10 @@
 #include <cstddef>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <stack>
 #include <vector>
-#include <ostream>
 
 #include "grammar.h"
 #include "parser.h"
@@ -99,8 +99,11 @@ public:
     virtual int Analyze(std::istream &is) const override;
 
 public:
-    virtual void OutputToGraphviz(std::ostream &os) const;
-    virtual void OutputToCsv(std::ostream &os) const;
+    virtual void OutputToGraphviz(std::ostream &os) const override;
+
+    virtual void OutputToCsv(std::ostream &os) const override;
+
+    virtual void OutputToGo(std::ostream &os) const { }
 
 protected:
     void computeAndCacheLr0Items();

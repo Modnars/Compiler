@@ -61,7 +61,7 @@ private:
             return iter->second;
         }
         auto newItem = std::make_shared<const LR1Item>(lr0It, lookahead);
-        this->items_.insert({{lr0It, lookahead}, newItem});
+        items_.insert({{lr0It, lookahead}, newItem});
         return newItem;
     }
 
