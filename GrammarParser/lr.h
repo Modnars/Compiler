@@ -11,6 +11,7 @@
 #include <set>
 #include <stack>
 #include <vector>
+#include <ostream>
 
 #include "grammar.h"
 #include "parser.h"
@@ -96,6 +97,10 @@ public:
 
 public:
     virtual int Analyze(std::istream &is) const override;
+
+public:
+    virtual void OutputToGraphviz(std::ostream &os) const;
+    virtual void OutputToCsv(std::ostream &os) const;
 
 protected:
     void computeAndCacheLr0Items();

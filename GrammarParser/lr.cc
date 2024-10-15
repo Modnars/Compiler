@@ -4,7 +4,9 @@
  * @Note: Copyrights (c) 2024 modnarshen. All rights reserved.
  */
 #include <algorithm>
+#include <deque>
 #include <iostream>
+#include <ostream>
 #include <queue>
 #include <sstream>
 #include <string>
@@ -61,28 +63,33 @@ int LRParser::Analyze(std::istream &is) const {
         while (idx < tokens.size()) {
             std::int64_t val;
             if (auto ret = searchActionTable(stateStack.top(), tokens[idx], val); ret != 0) {
+                util::LOG_ERROR("[SHIFT] (%d, %s)", stateStack.top(), tokens[idx].c_str());
                 acceptSucc = false;
                 break;
             }
             if (val >= 0) {
+                util::LOG_TRACE("[SHIFT] (%d, %s) -> %ld", stateStack.top(), tokens[idx].c_str(), val);
                 stateStack.push(val);
                 ++idx;
             } else {
-                if (val == -1L && tokens[idx] == Grammar::EndMark) {
+                auto reduceProduction = grammar_.GetProduction(-static_cast<int32_t>(val));
+                util::LOG_TRACE("[REDUCE] (%d, %s) -> %ld(%s)", stateStack.top(), tokens[idx].c_str(), val,
+                                reduceProduction->ToString().c_str());
+                if (reduceProduction->Number() == 1 && tokens[idx] == Grammar::EndMark) {
                     acceptSucc = true;
                     break;
                 }
-                auto reduceProduction = grammar_.GetProduction(-static_cast<int32_t>(val));
-                util::LOG_TRACE("[REDUCE] %s", reduceProduction->ToString().c_str());
-                if (reduceProduction->Right()[0] != Grammar::NilMark) {
+                if (reduceProduction->Right().front() != Grammar::NilMark) {
                     for (std::size_t i = 0UL; i < reduceProduction->Right().size(); ++i) {
                         stateStack.pop();
                     }
                 }
                 if (auto ret = searchActionTable(stateStack.top(), reduceProduction->Left(), val); ret != 0) {
+                    util::LOG_ERROR("[GOTO] (%d, %s)", stateStack.top(), reduceProduction->Left().c_str());
                     acceptSucc = false;
                     break;
                 } else {
+                    util::LOG_TRACE("[GOTO] (%d, %s) -> %ld", stateStack.top(), reduceProduction->Left().c_str(), val);
                     stateStack.push(static_cast<std::size_t>(val));
                 }
             }
@@ -94,6 +101,58 @@ int LRParser::Analyze(std::istream &is) const {
         }
     }
     return 0;
+}
+
+void LRParser::OutputToGraphviz(std::ostream &os) const {
+    os << "digraph G {" << std::endl;
+    for (std::size_t stateNo = 0UL; stateNo < actionTable_.size(); ++stateNo) {
+        for (const auto &kv : actionTable_[stateNo]) {
+            if (kv.second < 0) {
+                continue;
+            }
+            if (grammar_.IsNonTerminal(kv.first)) {
+                continue;
+            }
+            os << "    "
+               << "I" << stateNo << " -> I" << kv.second << " [label=\"" << kv.first << "\"]" << std::endl;
+        }
+    }
+    os << "}" << std::endl;
+}
+
+void LRParser::OutputToCsv(std::ostream &os) const {
+    std::deque<std::string> symbols;
+    std::set<std::string> added;
+    for (std::size_t stateNo = 0UL; stateNo < actionTable_.size(); ++stateNo) {
+        for (const auto &kv : actionTable_[stateNo]) {
+            if (added.find(kv.first) != added.end()) {
+                continue;
+            }
+            added.insert(kv.first);
+            if (grammar_.IsNonTerminal(kv.first)) {
+                symbols.push_back(kv.first);
+            } else {
+                symbols.push_front(kv.first);
+            }
+        }
+    }
+    os << "STATE\\SYMBOL";
+    for (const auto &symbol : symbols) {
+        os << ", " << symbol;
+    }
+    os << std::endl;
+    for (std::size_t stateNo = 0UL; stateNo < actionTable_.size(); ++stateNo) {
+        os << stateNo;
+        for (const auto &symbol : symbols) {
+            auto iter = actionTable_[stateNo].find(symbol);
+            if (iter == actionTable_[stateNo].end()) {
+                os << ", error";
+            } else {
+                os << ", " << iter->second;
+            }
+        }
+        os << std::endl;
+    }
 }
 
 void LRParser::computeAndCacheLr0Items() {

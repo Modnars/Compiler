@@ -4,3 +4,5 @@ id
 id [] []
 int [] []
 id [ int ] [ int ]
+id [ id [ ] ]
+int [ [ [] [] ] [ [] [] ] ]

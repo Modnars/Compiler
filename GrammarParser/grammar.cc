@@ -13,8 +13,8 @@
 #include "parser.h"
 #include "util.h"
 
-const std::string Grammar::EndMark = "#";
-const std::string Grammar::NilMark = "$";
+const std::string Grammar::EndMark = "$";
+const std::string Grammar::NilMark = "ε";
 
 namespace {
 
@@ -25,8 +25,11 @@ std::set<std::shared_ptr<Production>> _InProcess;
 std::string Production::ToString() const {
     std::stringstream ss;
     ss << this->left_ << " -> ";
-    for (const auto &r : this->right_) {
-        ss << r << " ";
+    for (std::size_t i = 0UL; i < this->right_.size(); ++i) {
+        ss << right_[i];
+        if (i + 1UL < right_.size()) {
+            ss << " ";
+        }
     }
     return ss.str();
 }
@@ -94,7 +97,7 @@ void Grammar::ComputeAndCacheFollowSet() {
                             containsNil = true;
                             continue;
                         }
-                        changed = followSet_[target].insert(terminal).second;
+                        changed |= followSet_[target].insert(terminal).second;
                     }
                     if (!containsNil) {
                         break;
@@ -102,7 +105,7 @@ void Grammar::ComputeAndCacheFollowSet() {
                 }
                 if (containsNil) {
                     for (const auto &terminal : followSet_[left]) {
-                        changed = followSet_[target].insert(terminal).second;
+                        changed |= followSet_[target].insert(terminal).second;
                     }
                 }
             }
