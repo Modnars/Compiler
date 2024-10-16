@@ -58,8 +58,8 @@ std::shared_ptr<const ItemSet<LR0Item>> SLRParser::GOTO(std::shared_ptr<const It
     return CLOSURE(result);
 }
 
-void SLRParser::ShowDetails() const {
-    grammar_.ShowDetails();
+void SLRParser::ShowDetails(std::ostream &os) const {
+    grammar_.ShowDetails(os);
 
     std::cout << std::endl << "STATE CLOSURE:" << std::endl;
     for (const auto &kv : closures_) {

@@ -23,7 +23,7 @@ public:
     std::shared_ptr<const ItemSet<LR0Item>> GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
                                                  const std::string &shiftSymbol);
 
-    void ShowDetails() const;
+    void ShowDetails(std::ostream &os) const override;
 
 public:
     virtual int Parse() override;

@@ -11,7 +11,7 @@
 
 namespace util {
 
-static bool IsVerboseMode = false;
+extern bool IsVerboseMode;
 static bool IsDebugMode = false;
 
 inline std::vector<std::string> Split(const std::string &str, const std::string &delimiter) {

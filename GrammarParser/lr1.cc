@@ -60,7 +60,7 @@ int LR1Parser::Parse() {
 }
 
 void LR1Parser::ShowDetails(std::ostream &os) const {
-    grammar_.ShowDetails();
+    grammar_.ShowDetails(os);
 
     os << std::endl << "STATE CLOSURE:" << std::endl;
     for (const auto &kv : closures_) {

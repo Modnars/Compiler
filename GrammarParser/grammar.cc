@@ -173,23 +173,23 @@ std::set<std::string> Grammar::ComputeFirstSet(std::vector<std::string>::const_i
     return result;
 }
 
-void Grammar::ShowDetails() const {
-    std::cout << "FIRST SET:" << std::endl;
+void Grammar::ShowDetails(std::ostream &os) const {
+    os << "FIRST SET:" << std::endl;
     for (const auto &kv : firstSet_) {
-        std::cout << kv.first << ": ";
+        os << kv.first << ": ";
         for (const auto &symbol : kv.second) {
-            std::cout << symbol << " ";
+            os << symbol << " ";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
 
-    std::cout << std::endl;
-    std::cout << "FOLLOW SET:" << std::endl;
+    os << std::endl;
+    os << "FOLLOW SET:" << std::endl;
     for (const auto &kv : followSet_) {
-        std::cout << kv.first << ": ";
+        os << kv.first << ": ";
         for (const auto &symbol : kv.second) {
-            std::cout << symbol << " ";
+            os << symbol << " ";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
 }

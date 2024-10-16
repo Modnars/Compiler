@@ -107,7 +107,7 @@ public:
                                            std::vector<std::string>::const_iterator end) const;
 
     /// @brief Print the brief information of the grammar.
-    void ShowDetails() const;
+    void ShowDetails(std::ostream &os) const;
 
 private:
     bool canGenNil(const std::string &symbol) const {

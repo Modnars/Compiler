@@ -21,6 +21,8 @@ const char *YELLOW = "\e[1;33m";
 
 namespace util {
 
+bool IsVerboseMode = false;
+
 void LOG_TRACE(const char *format, ...) {
     if (!IsVerboseMode) {
         return;

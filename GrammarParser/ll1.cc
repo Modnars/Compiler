@@ -91,7 +91,7 @@ int LL1Parser::Analyze(std::istream &is) const {
 }
 
 void LL1Parser::ShowDetails(std::ostream &os) const {
-    grammar_.ShowDetails();
+    grammar_.ShowDetails(os);
 
     os << "\nPREDICTION TABLE:" << std::endl;
     for (const auto &kv : predictionTable_) {
