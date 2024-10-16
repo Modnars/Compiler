@@ -20,8 +20,13 @@ public:
     virtual int Analyze(std::istream &is) const = 0;
 
 public:
+    virtual void ShowDetails(std::ostream &os) const { }
+
     virtual void OutputToGraphviz(std::ostream &os) const { }
+
     virtual void OutputToCsv(std::ostream &os) const { }
+
+    virtual void OutputToGo(std::ostream &os) const { }
 };
 
 }  // namespace mcc

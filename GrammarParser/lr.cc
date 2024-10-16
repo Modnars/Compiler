@@ -150,6 +150,35 @@ void LRParser::OutputToCsv(std::ostream &os) const {
     }
 }
 
+void LRParser::OutputToGo(std::ostream &os) const {
+    std::uint32_t indent = 0U;
+
+    os << "package mcc;\n\n"
+       << "var (\n";
+    
+    os << util::Indent(++indent, '\t') << "Productions = []string{\n";
+    ++indent;
+    for (auto p : grammar_.AllProductions()) {
+        os << util::Indent(indent, '\t') << "\"" << p->ToString() << "\",\n";
+    }
+    --indent;
+    os << util::Indent(indent--, '\t') << "}\n";
+
+    os << util::Indent(++indent, '\t') << "LRActionTable = []map[string]int{\n";
+    for (const auto &iMap : actionTable_) {
+        os << util::Indent(++indent, '\t') << "{\n";
+        ++indent;
+        for (const auto &kv : iMap) {
+            os << util::Indent(indent, '\t') << "\"" << kv.first << "\": " << kv.second << ",\n";
+        }
+        --indent;
+        os << util::Indent(indent--, '\t') << "},\n";
+    }
+    os << util::Indent(indent--, '\t') << "}\n";
+
+    os << ")" << std::endl;
+}
+
 void LRParser::computeAndCacheLr0Items() {
     for (auto p : grammar_.AllProductions()) {
         auto head = NewLR0Item(p, 0UL);

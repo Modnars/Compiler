@@ -103,7 +103,7 @@ public:
 
     virtual void OutputToCsv(std::ostream &os) const override;
 
-    virtual void OutputToGo(std::ostream &os) const { }
+    virtual void OutputToGo(std::ostream &os) const override;
 
 protected:
     void computeAndCacheLr0Items();

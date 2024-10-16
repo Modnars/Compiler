@@ -60,4 +60,20 @@ void LOG_INFO(const char *format, ...);
 void LOG_WARN(const char *format, ...);
 void LOG_ERROR(const char *format, ...);
 
+inline std::string Indent(std::uint32_t num, char indentCh = ' ') {
+    if (indentCh == ' ') {
+        num *= 4U;
+    }
+    return std::string(num, indentCh);
+}
+
+inline std::string Basename(const std::string &filepath) {
+    return filepath.substr(filepath.find_last_of("/") + 1UL);
+}
+
+inline std::string Filename(const std::string &filepath) {
+    auto filename = filepath.substr(filepath.find_last_of("/") + 1UL);
+    return filename.substr(0, filename.find_last_of("."));
+}
+
 }  // namespace util

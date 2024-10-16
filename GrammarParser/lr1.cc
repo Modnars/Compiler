@@ -59,23 +59,23 @@ int LR1Parser::Parse() {
     return 0;
 }
 
-void LR1Parser::ShowDetails() const {
+void LR1Parser::ShowDetails(std::ostream &os) const {
     grammar_.ShowDetails();
 
-    std::cout << std::endl << "STATE CLOSURE:" << std::endl;
+    os << std::endl << "STATE CLOSURE:" << std::endl;
     for (const auto &kv : closures_) {
-        std::cout << "\nI" << kv.first << ":" << std::endl;
+        os << "\nI" << kv.first << ":" << std::endl;
         for (auto item : kv.second->Items()) {
-            std::cout << item->ToString() << std::endl;
+            os << item->ToString() << std::endl;
         }
     }
-    std::cout << std::endl << "ACTION TABLE:" << std::endl;
+    os << std::endl << "ACTION TABLE:" << std::endl;
     for (std::size_t i = 0UL; i < actionTable_.size(); ++i) {
-        std::cout << i << ":\t";
+        os << i << ":\t";
         for (const auto &kv : actionTable_[i]) {
-            std::cout << kv.first << ": " << kv.second << "\t";
+            os << kv.first << ": " << kv.second << "\t";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
 }
 

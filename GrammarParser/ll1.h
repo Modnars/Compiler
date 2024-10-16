@@ -24,7 +24,7 @@ public:
     virtual int Analyze(std::istream &is) const override;
 
 public:
-    void ShowDetails(std::ostream &os) const;
+    void ShowDetails(std::ostream &os) const override;
 
 protected:
     int fillPredictionTable(const std::string &nonTerminal, const std::string &terminal,
