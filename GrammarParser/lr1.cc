@@ -27,6 +27,7 @@ int LR1Parser::Parse() {
     grammar_.ComputeAndCacheFirstSet();
     computeAndCacheLr0Items();
 
+    parsedSucc_ = true;
     auto I0 = std::make_shared<ItemSet<LR1Item>>();
     I0->Add(newLr1Item(lr0Item(grammar_.AllProductions()[0], 0UL), {Grammar::EndMark}));
     CLOSURE(I0);

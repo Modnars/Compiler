@@ -48,7 +48,7 @@ private:
 
     std::unordered_map<std::string, std::unordered_map<std::string, std::shared_ptr<const Production>>>
         predictionTable_;
-    bool parsedSucc_ = true;
+    bool parsedSucc_ = false;
 };
 
 }  // namespace mcc

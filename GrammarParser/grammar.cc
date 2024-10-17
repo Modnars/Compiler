@@ -9,8 +9,6 @@
 #include <sstream>
 
 #include "grammar.h"
-#include "lr0.h"
-#include "parser.h"
 #include "util.h"
 
 const std::string Grammar::EndMark = "$";

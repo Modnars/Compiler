@@ -8,15 +8,11 @@
 #include <memory>
 #include <set>
 
+#include "lr.h"
 #include "parser.h"
 
-namespace lalr {
+namespace mcc {
 
-class Item {
-private:
-    std::shared_ptr<Production> production_;
-    std::size_t dot_pos_ = 0UL;
-    std::set<std::string> look_ahead_;
-};
+class LALRParser : public mcc::LRParser { };
 
-} // namespace lalr
+}  // namespace mcc

@@ -1,0 +1,4 @@
+S' -> S
+S -> a S b S
+S -> b S a S
+S -> ε
