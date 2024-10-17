@@ -36,12 +36,12 @@ std::string Production::ToString() const {
 
 int Grammar::ReadFromFile(const std::string &filepath) {
     if (!productions_.empty()) {
-        util::LOG_ERROR("[ERROR] already contains productions");
+        util::LOG_ERROR("[ERROR] The grammar object already contains productions");
         return -1;
     }
     std::ifstream ifs(filepath);
     if (!ifs) {
-        util::LOG_ERROR("error: failed to open file '%s'.", filepath.c_str());
+        util::LOG_ERROR("[ERROR] Failed to open file `%s`.", filepath.c_str());
         return -1;
     }
     std::string line;

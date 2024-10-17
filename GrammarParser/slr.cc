@@ -4,16 +4,11 @@
  * @Note: Copyrights (c) 2024 modnarshen. All rights reserved.
  */
 #include <algorithm>
-#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <queue>
-#include <sstream>
-#include <utility>
 
-#include "grammar.h"
 #include "slr.h"
-#include "util.h"
 
 namespace mcc {
 
@@ -83,6 +78,7 @@ int SLRParser::Parse() {
     grammar_.ComputeAndCacheFollowSet();
     computeAndCacheLr0Items();
 
+    parsedSucc_ = true;
     auto I0 = std::make_shared<ItemSet<LR0Item>>();
     I0->Add(lr0Item(grammar_.AllProductions()[0], 0UL));
     CLOSURE(I0);
@@ -101,27 +97,13 @@ int SLRParser::Parse() {
                 kv.second->SetNumber(closureNum_++);
                 closures_.insert({kv.second->Number(), kv.second});
                 seq.push(kv.second);
-                fillActionTable(itemSet->Number(), kv.first, kv.second->Number());
-                for (auto item : kv.second->Items()) {
-                    if (!item->CanReduce()) {  // only process the item that can be reduced
-                        continue;
-                    }
-                    auto production = item->GetProduction();
-                    const auto &followSet = grammar_.FOLLOW(production->Left());
-                    for (const auto &symbol : followSet) {
-                        fillActionTable(kv.second->Number(), symbol, -production->Number());
-                    }
-                }
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
             } else {
-                fillActionTable(itemSet->Number(), kv.first, iter->second->Number());
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, iter->second->Number()));
             }
         }
     }
-    if (!parsedSucc_) {
-        util::LOG_ERROR("[ERROR] the grammar is not an SLR grammar for there is a parsing conflict");
-        return 1;
-    }
-    return 0;
+    return parsedSucc_ ? 0 : 1;
 }
 
 std::map<std::string, std::shared_ptr<ItemSet<LR0Item>>> SLRParser::computeGOTO(
@@ -133,6 +115,12 @@ std::map<std::string, std::shared_ptr<ItemSet<LR0Item>>> SLRParser::computeGOTO(
                 targets[item->NextSymbol()] = std::make_shared<ItemSet<LR0Item>>();
             }
             targets[item->NextSymbol()]->Add(item->Shift());
+        } else if (item->CanReduce()) {  // actually `item->CanReduce()` always equals to `!item->HasNextSymbol()`
+            auto production = item->GetProduction();
+            const auto &followSet = grammar_.FOLLOW(production->Left());
+            for (const auto &symbol : followSet) {
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), symbol, -production->Number()));
+            }
         }
     }
     return targets;

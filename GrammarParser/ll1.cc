@@ -21,17 +21,11 @@ int LL1Parser::Parse() {
             if (terminal == Grammar::NilMark) {
                 continue;
             }
-            if (auto ret = fillPredictionTable(p->Left(), terminal, p); ret != 0) {
-                util::LOG_ERROR("[ERROR] conflict!");
-                parsedSucc_ = false;
-            }
+            parsedSucc_ &= (0 == fillPredictionTable(p->Left(), terminal, p));
         }
         if (firsetSet.find(Grammar::NilMark) != firsetSet.end()) {
             for (const auto &terminal : grammar_.FOLLOW(p->Left())) {
-                if (auto ret = fillPredictionTable(p->Left(), terminal, p); ret != 0) {
-                    util::LOG_ERROR("[ERROR] conflict!");
-                    parsedSucc_ = false;
-                }
+                parsedSucc_ &= (0 == fillPredictionTable(p->Left(), terminal, p));
             }
         }
     }
@@ -59,13 +53,13 @@ int LL1Parser::Analyze(std::istream &is) const {
                 symbolStack.pop();
                 ++idx;
             } else if (!grammar_.IsNonTerminal(X)) {
-                util::LOG_ERROR("[ERROR] terminal symbol");
+                util::LOG_ERROR("[ERROR] A terminal symbol is found.");
                 analyzedSucc = false;
                 break;
             } else {
                 auto production = searchPredictionTable(X, tokens[idx]);
                 if (production == nullptr) {
-                    util::LOG_ERROR("[ERROR] search production failed");
+                    util::LOG_ERROR("[ERROR] No prediction production.");
                     analyzedSucc = false;
                     break;
                 } else {
@@ -101,6 +95,16 @@ void LL1Parser::ShowDetails(std::ostream &os) const {
         }
         os << std::endl;
     }
+}
+
+int LL1Parser::fillPredictionTable(const std::string &nonTerminal, const std::string &terminal,
+                                   std::shared_ptr<const Production> production) {
+    if (auto record = predictionTable_[nonTerminal][terminal]; record != nullptr) {
+        util::LOG_ERROR("[CONFLICT] `%s` vs `%s`", record->ToString().c_str(), production->ToString().c_str());
+        return -1;
+    }
+    predictionTable_[nonTerminal][terminal] = production;
+    return 0;
 }
 
 }  // namespace mcc

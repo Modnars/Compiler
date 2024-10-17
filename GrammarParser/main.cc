@@ -10,10 +10,23 @@
 #include <memory>
 
 #include "grammar.h"
+#include "parser.h"
+#include "util.h"
+
 #include "ll1.h"
 #include "lr1.h"
 #include "slr.h"
-#include "util.h"
+
+namespace {
+
+std::vector<const char *> _parserNames = {
+    "UNKNOWN",
+    "LL(1)",
+    "SLR(1)",
+    "LR(1)",
+};
+
+}
 
 void version() {
     std::cout << "GrammarParser v1.0.0\n"
@@ -41,9 +54,7 @@ void usage() {
 int main(int argc, char *argv[]) {
     std::string grammarFilepath = "";
     std::string inputFilepath = "";
-    std::string grammarType = "";
-    std::shared_ptr<mcc::Parser> parser = nullptr;
-    Grammar grammar;
+    auto parserType = mcc::ParserType::UNKNOWN;
     bool outDot, outCsv, outGo = false;
 
     int opt = 0;
@@ -82,16 +93,13 @@ int main(int argc, char *argv[]) {
                 break;
             }
             case 1:
-                grammarType = "LL(1)";
-                parser = std::make_shared<mcc::LL1Parser>(grammar);
+                parserType = mcc::ParserType::LL1;
                 break;
             case 2:
-                grammarType = "SLR(1)";
-                parser = std::make_shared<mcc::SLRParser>(grammar);
+                parserType = mcc::ParserType::SLR1;
                 break;
             case 3:
-                grammarType = "LR(1)";
-                parser = std::make_shared<mcc::LR1Parser>(grammar);
+                parserType = mcc::ParserType::LR1;
                 break;
             default:
                 usage();
@@ -111,21 +119,42 @@ int main(int argc, char *argv[]) {
         usage();
         exit(1);
     }
+
+    Grammar grammar;
     if (auto ret = grammar.ReadFromFile(grammarFilepath); ret != 0) {
-        util::LOG_ERROR("[ERROR] failed to read source grammar file");
+        util::LOG_ERROR("[ERROR] Failed to read source grammar file `%s`.", grammarFilepath.c_str());
         exit(1);
     }
-    if (parser == nullptr || grammarType == "") {
-        util::LOG_ERROR(
-            "[ERROR] must select a grammar type in LL(1), SLR(1) and LR(1). the option is `--ll1`, `--slr` or "
-            "`--lr1`");
+
+    std::shared_ptr<mcc::Parser> parser = nullptr;
+    switch (parserType) {
+        case mcc::ParserType::LL1:
+            parser = std::make_shared<mcc::LL1Parser>(grammar);
+            break;
+        case mcc::ParserType::SLR1:
+            parser = std::make_shared<mcc::SLRParser>(grammar);
+            break;
+        case mcc::ParserType::LR1:
+            parser = std::make_shared<mcc::LR1Parser>(grammar);
+            break;
+        case mcc::ParserType::UNKNOWN:
+        default:
+            util::LOG_ERROR(
+                "[ERROR] You must select a grammar type in LL(1), SLR(1) and LR(1). The option is `--ll1`, `--slr` or "
+                "`--lr1`");
+            exit(1);
+    }
+    if (parser == nullptr) {
+        util::LOG_ERROR("[ERROR] Create %s Parser failed.", _parserNames[static_cast<std::size_t>(parserType)]);
         exit(1);
     }
 
     if (auto ret = parser->Parse(); ret != 0) {
-        util::LOG_ERROR("[ERROR] invalid %s grammar, parsing failed", grammarType.c_str());
+        util::LOG_ERROR("[FAILURE] Parsing failed. This grammar is not a valid %s grammar.",
+                        _parserNames[static_cast<std::size_t>(parserType)]);
     } else {
-        util::LOG_INFO("[INFO] parsed succeed. the grammar is a valid %s grammar", grammarType.c_str());
+        util::LOG_INFO("[SUCCESS] Parsing succeeded. This grammar is a valid %s grammar.",
+                       _parserNames[static_cast<std::size_t>(parserType)]);
     }
 
     if (util::IsVerboseMode) {
@@ -135,7 +164,7 @@ int main(int argc, char *argv[]) {
     if (inputFilepath.size() > 0UL) {
         std::ifstream ifs(inputFilepath);
         if (!ifs) {
-            util::LOG_ERROR("error: failed to open file '%s'.", inputFilepath.c_str());
+            util::LOG_ERROR("[ERROR] Failed to open file `%s`.", inputFilepath.c_str());
             return -1;
         }
         parser->Analyze(ifs);

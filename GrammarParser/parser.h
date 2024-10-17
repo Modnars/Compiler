@@ -13,6 +13,13 @@
 
 namespace mcc {
 
+enum class ParserType : std::size_t {
+    UNKNOWN = 0UL,
+    LL1 = 1UL,
+    SLR1 = 2UL,
+    LR1 = 3UL,
+};
+
 class Parser {
 public:
     virtual int Parse() = 0;

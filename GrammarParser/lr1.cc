@@ -9,7 +9,6 @@
 #include <sstream>
 
 #include "lr1.h"
-#include "util.h"
 
 namespace mcc {
 
@@ -46,17 +45,13 @@ int LR1Parser::Parse() {
                 kv.second->SetNumber(closureNum_++);
                 closures_.insert({kv.second->Number(), kv.second});
                 seq.push(kv.second);
-                fillActionTable(itemSet->Number(), kv.first, kv.second->Number());
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
             } else {
-                fillActionTable(itemSet->Number(), kv.first, iter->second->Number());
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, iter->second->Number()));
             }
         }
     }
-    if (!parsedSucc_) {
-        util::LOG_ERROR("[ERROR] the grammar is not an LR(1) grammar for there is a parsing conflict");
-        return 1;
-    }
-    return 0;
+    return parsedSucc_ ? 0 : 1;
 }
 
 void LR1Parser::ShowDetails(std::ostream &os) const {
@@ -162,16 +157,18 @@ std::map<std::string, std::shared_ptr<ItemSet<LR1Item>>> LR1Parser::computeGOTO(
     std::shared_ptr<const ItemSet<LR1Item>> itemSet) {
     std::map<std::string, std::shared_ptr<ItemSet<LR1Item>>> result;
     for (auto item : itemSet->Items()) {
-        if (item->CanReduce()) {
+        if (item->HasNextSymbol()) {
+            if (result[item->NextSymbol()] == nullptr) {
+                result[item->NextSymbol()] = std::make_shared<ItemSet<LR1Item>>();
+            }
+            result[item->NextSymbol()]->Add(newLr1Item(item->lr0Item_->Shift(), item->lookahead_));
+        } else if (item->CanReduce()) {
             for (const auto &symbol : item->lookahead_) {
-                fillActionTable(itemSet->Number(), symbol, -item->lr0Item_->GetProduction()->Number());
+                parsedSucc_ &=
+                    (0 == fillActionTable(itemSet->Number(), symbol, -item->lr0Item_->GetProduction()->Number()));
             }
             continue;
         }
-        if (result[item->NextSymbol()] == nullptr) {
-            result[item->NextSymbol()] = std::make_shared<ItemSet<LR1Item>>();
-        }
-        result[item->NextSymbol()]->Add(newLr1Item(item->lr0Item_->Shift(), item->lookahead_));
     }
     return result;
 }

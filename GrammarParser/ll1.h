@@ -28,13 +28,7 @@ public:
 
 protected:
     int fillPredictionTable(const std::string &nonTerminal, const std::string &terminal,
-                            std::shared_ptr<const Production> production) {
-        if (predictionTable_[nonTerminal][terminal] != nullptr) {
-            return -1;
-        }
-        predictionTable_[nonTerminal][terminal] = production;
-        return 0;
-    }
+                            std::shared_ptr<const Production> production);
 
     std::shared_ptr<const Production> searchPredictionTable(const std::string &nonTerminal,
                                                             const std::string &terminal) const {

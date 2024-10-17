@@ -155,7 +155,7 @@ void LRParser::OutputToGo(std::ostream &os) const {
 
     os << "package mcc;\n\n"
        << "var (\n";
-    
+
     os << util::Indent(++indent, '\t') << "Productions = []string{\n";
     ++indent;
     for (auto p : grammar_.AllProductions()) {
@@ -195,18 +195,41 @@ void LRParser::computeAndCacheLr0Items() {
     }
 }
 
-void LRParser::fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val) {
+int LRParser::fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val) {
     if (actionTable_.size() < stateNum + 1UL) {
         actionTable_.reserve(stateNum + 1UL);
         actionTable_.insert(actionTable_.end(), stateNum + 1UL - actionTable_.size(),
                             std::map<std::string, std::int64_t>());
     }
-    if (actionTable_[stateNum].find(symbol) != actionTable_[stateNum].end()) {
-        util::LOG_ERROR("[ERROR] Action conflict!");
-        parsedSucc_ = false;
-        return;
+    if (auto iter = actionTable_[stateNum].find(symbol); iter != actionTable_[stateNum].end()) {
+        if (iter->second > 0 && val > 0) {
+            util::LOG_ERROR(
+                "[CONFLICT] [SHIFT/SHIFT] Shift to state `%ld` vs shift to shift `%ld` at (state: %zu, meets: %s)",
+                iter->second, val, stateNum, symbol.c_str());
+        } else if (iter->second < 0 && val < 0) {
+            auto p1 = grammar_.GetProduction(-static_cast<int32_t>(iter->second));
+            auto p2 = grammar_.GetProduction(-static_cast<int32_t>(val));
+            util::LOG_ERROR(
+                "[CONFLICT] [REDUCE/REDUCE] Reduce with `%s` vs reduce with `%s` at (state: %zu, meets: %s)",
+                p1->ToString().c_str(), p2->ToString().c_str(), stateNum, symbol.c_str());
+        } else {
+            std::shared_ptr<const Production> p = nullptr;
+            std::int64_t v = 0;
+            if (val > 0) {
+                p = grammar_.GetProduction(-static_cast<int32_t>(iter->second));
+                v = val;
+            } else {
+                p = grammar_.GetProduction(-static_cast<int32_t>(val));
+                v = iter->second;
+            }
+            util::LOG_ERROR(
+                "[CONFLICT] [REDUCE/SHIFT] Shift to state `%zu` vs reduce with `%s` at (state: %zu, meets: %s)", v,
+                p->ToString().c_str(), stateNum, symbol.c_str());
+        }
+        return -1;
     }
     actionTable_[stateNum][symbol] = val;
+    return 0;
 }
 
 int LRParser::searchActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const {

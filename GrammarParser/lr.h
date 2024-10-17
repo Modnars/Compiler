@@ -116,7 +116,7 @@ protected:
         return iter->second;
     }
 
-    void fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
+    int fillActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t val);
 
     int searchActionTable(std::size_t stateNum, const std::string &symbol, std::int64_t &val) const;
 
@@ -125,7 +125,7 @@ protected:
     std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<LR0Item>> lr0Items_;
 
     std::vector<std::map<std::string, std::int64_t>> actionTable_;
-    bool parsedSucc_ = true;
+    bool parsedSucc_ = false; // only has executed `Parse()` and result is succ, the flag can be true.
 };
 
 }  // namespace mcc

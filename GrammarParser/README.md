@@ -45,8 +45,8 @@ Usage: GrammarParser --file GRAMMAR_FILE [OPTION]
 | 4.49 | ❌ | ❌ | - | ✅ | 左值、右值的赋值文法。原书文法 4.49 |
 | 4.55 | ✅ | ✅ | - | ✅ | LR(1) 示例文法。原书文法 4.55 |
 | excelconfc | ❌ | ✅ | - | ✅ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 文法 |
-| Practice.4.6.5 | ✅ | ✅ | - | ✅ | 练习 4.6.5 文法的增广文法 |
-| Practice.4.6.6 | ❌ | ✅ | - | ✅ | 练习 4.6.6 文法 |
+| Practice.4.6.5 | ✅ | ❌ | - | ✅ | 练习 4.6.5 文法的增广文法 |
+| Practice.4.6.6 | ❌ | ✅ | - | ✅ | 练习 4.6.6 文法的增广文法 |
 
 ## 示例
 
