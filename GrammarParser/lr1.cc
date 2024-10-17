@@ -5,6 +5,7 @@
  */
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <queue>
 #include <sstream>
 
@@ -82,22 +83,10 @@ std::set<std::string> LR1Parser::computeLookahead(std::shared_ptr<const LR1Item>
     if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
         return item->lookahead_;
     }
-    std::set<std::string> result;
-    std::size_t dotPos = item->lr0Item_->DotPos() + 1UL;
-    for (; dotPos < item->lr0Item_->Right().size(); ++dotPos) {
-        auto symbol = item->lr0Item_->Right()[dotPos];
-        if (!grammar_.IsNonTerminal(symbol)) {
-            result.insert(symbol);
-            break;
-        }
-        const auto &firstSet = grammar_.FIRST(symbol);
-        if (firstSet.find(Grammar::NilMark) == firstSet.end()) {
-            result.insert(firstSet.begin(), firstSet.end());
-            break;
-        }
-        result.insert(firstSet.begin(), firstSet.end());
-    }
-    if (dotPos >= item->lr0Item_->Right().size()) {
+    auto iter = item->lr0Item_->Right().begin();
+    std::advance(iter, item->lr0Item_->DotPos() + 1UL);
+    auto result = grammar_.ComputeFirstSet(iter, item->lr0Item_->Right().end());
+    if (result.count(Grammar::NilMark)) {
         result.erase(Grammar::NilMark);
         // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
         // Since lookahead is a terminal symbol (`lookahead_` should also be a set of terminal symbols), we can insert

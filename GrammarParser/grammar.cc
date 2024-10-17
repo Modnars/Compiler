@@ -150,7 +150,7 @@ std::set<std::string> Grammar::computeAndCacheFirstSet(const std::string &symbol
 std::set<std::string> Grammar::ComputeFirstSet(std::vector<std::string>::const_iterator begin,
                                                std::vector<std::string>::const_iterator end) const {
     std::set<std::string> result;
-    bool containsNil = false;
+    bool containsNil = true;
     for (auto iter = begin; iter != end; ++iter) {
         if (IsNonTerminal(*iter)) {
             const auto &firsetSet = FIRST(*iter);

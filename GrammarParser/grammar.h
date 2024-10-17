@@ -103,6 +103,8 @@ public:
         return productions_[static_cast<std::size_t>(number - 1)];
     }
 
+    /// @brief Compute the FirstSet for a SubFields for a production's right part.
+    /// @warning When `@param begin` == `@param end`, the result is { Grammar::NilMark }.
     std::set<std::string> ComputeFirstSet(std::vector<std::string>::const_iterator begin,
                                            std::vector<std::string>::const_iterator end) const;
 
