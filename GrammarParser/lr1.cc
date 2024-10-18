@@ -83,9 +83,9 @@ std::set<std::string> LR1Parser::computeLookahead(std::shared_ptr<const LR1Item>
     if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
         return item->lookahead_;
     }
-    auto iter = item->lr0Item_->Right().begin();
-    std::advance(iter, item->lr0Item_->DotPos() + 1UL);
-    auto result = grammar_.ComputeFirstSet(iter, item->lr0Item_->Right().end());
+    auto iter = item->Right().begin();
+    std::advance(iter, item->DotPos() + 1UL);
+    auto result = grammar_.ComputeFirstSet(iter, item->Right().end());
     if (result.count(Grammar::NilMark)) {
         result.erase(Grammar::NilMark);
         // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
