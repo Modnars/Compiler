@@ -19,16 +19,26 @@
 namespace mcc {
 
 class LR0Item {
-    friend std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
-                                               std::shared_ptr<LR0Item> prev);
-
 public:
     LR0Item(std::shared_ptr<const Production> production, std::size_t dotPos)
         : production_(production), dotPos_(dotPos) { }
 
+    static std::shared_ptr<LR0Item> New(std::shared_ptr<const Production> production, std::size_t dotPos,
+                                        std::shared_ptr<LR0Item> prev = nullptr) {
+        auto newItem = std::make_shared<LR0Item>(production, dotPos);
+        if (prev) {
+            prev->shift_ = newItem;
+        }
+        return newItem;
+    }
+
 public:
     bool operator<(const LR0Item &rhs) const {
         return std::tie(*production_, dotPos_) < std::tie(*rhs.production_, rhs.dotPos_);
+    }
+
+    bool operator==(const LR0Item &rhs) const {
+        return std::tie(*production_, dotPos_) == std::tie(*rhs.production_, rhs.dotPos_);
     }
 
     std::string ToString() const;
@@ -65,14 +75,14 @@ private:
     std::shared_ptr<LR0Item> shift_ = nullptr;
 };
 
-inline std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
-                                           std::shared_ptr<LR0Item> prev = nullptr) {
-    auto newItem = std::make_shared<LR0Item>(production, dotPos);
-    if (prev) {
-        prev->shift_ = newItem;
-    }
-    return newItem;
-}
+// inline std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
+//                                            std::shared_ptr<LR0Item> prev = nullptr) {
+//     auto newItem = std::make_shared<LR0Item>(production, dotPos);
+//     if (prev) {
+//         prev->shift_ = newItem;
+//     }
+//     return newItem;
+// }
 
 template <typename _Item>
 class ItemSet {
@@ -96,7 +106,7 @@ public:
     LRParser(Grammar &grammar) : grammar_(grammar) { }
 
 public:
-    virtual int Analyze(std::istream &is) const override;
+    virtual void Analyze(std::istream &is) const override;
 
 public:
     virtual void OutputToGraphviz(std::ostream &os) const override;
@@ -125,7 +135,28 @@ protected:
     std::map<std::pair<std::shared_ptr<const Production>, std::size_t>, std::shared_ptr<LR0Item>> lr0Items_;
 
     std::vector<std::map<std::string, std::int64_t>> actionTable_;
-    bool parsedSucc_ = false; // only has executed `Parse()` and result is succ, the flag can be true.
+    bool parsedSucc_ = false;  // only has executed `Parse()` and result is succ, the flag can be true.
 };
+
+template <typename _Item>
+std::set<std::string> ComputeLookahead(const Grammar &grammar, std::shared_ptr<const _Item> lrItem) {
+    if (lrItem->CanReduce()) {
+        return lrItem->lookahead_;
+    }
+    if (lrItem->HasNextSymbol() && !grammar.IsNonTerminal(lrItem->NextSymbol())) {
+        return lrItem->lookahead_;
+    }
+    auto iter = lrItem->Right().begin();
+    std::advance(iter, lrItem->DotPos() + 1UL);
+    auto result = grammar.ComputeFirstSet(iter, lrItem->Right().end());
+    if (result.count(Grammar::NilMark)) {
+        result.erase(Grammar::NilMark);
+        // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
+        // Since lookahead is a terminal symbol (`lookahead_` should also be a set of terminal symbols), we can insert
+        // lookahead (`lookahead_`) directly.
+        result.insert(lrItem->lookahead_.begin(), lrItem->lookahead_.end());
+    }
+    return result;
+}
 
 }  // namespace mcc

@@ -11,14 +11,20 @@ namespace mcc {
 
 class LR1Item {
     friend class LR1Parser;
+    friend std::set<std::string> ComputeLookahead<LR1Item>(const Grammar &, std::shared_ptr<const LR1Item>);
 
 public:
     LR1Item(std::shared_ptr<const LR0Item> item, const std::set<std::string> &lookahead)
         : lr0Item_(item), lookahead_(lookahead) { }
 
+public:
     bool operator<(const LR1Item &rhs) const {
         return std::tie(*lr0Item_, lookahead_) < std::tie(*rhs.lr0Item_, rhs.lookahead_);
     }
+
+    struct CompareByLR0Item {
+        bool operator()(const LR1Item &lhs, const LR1Item &rhs) const { return *lhs.lr0Item_ < *rhs.lr0Item_; }
+    };
 
     std::string ToString() const;
 
@@ -46,10 +52,10 @@ public:
     virtual int Parse() override;
 
 public:
-    std::shared_ptr<const ItemSet<LR1Item>> CLOSURE(std::shared_ptr<ItemSet<LR1Item>> itemSet);
+    std::shared_ptr<ItemSet<LR1Item>> CLOSURE(std::shared_ptr<ItemSet<LR1Item>> itemSet);
 
-    std::shared_ptr<const ItemSet<LR1Item>> GOTO(std::shared_ptr<const ItemSet<LR1Item>> itemSet,
-                                                 const std::string &shiftSymbol);
+    std::shared_ptr<ItemSet<LR1Item>> GOTO(std::shared_ptr<const ItemSet<LR1Item>> itemSet,
+                                           const std::string &shiftSymbol);
 
     void ShowDetails(std::ostream &os) const override;
 

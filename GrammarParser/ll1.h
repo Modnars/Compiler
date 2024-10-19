@@ -21,7 +21,7 @@ public:
 public:
     virtual int Parse() override;
 
-    virtual int Analyze(std::istream &is) const override;
+    virtual void Analyze(std::istream &is) const override;
 
 public:
     void ShowDetails(std::ostream &os) const override;

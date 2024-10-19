@@ -18,10 +18,10 @@ public:
     using LRParser::LRParser;
 
 public:
-    std::shared_ptr<const ItemSet<LR0Item>> CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet);
+    std::shared_ptr<ItemSet<LR0Item>> CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet);
 
-    std::shared_ptr<const ItemSet<LR0Item>> GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
-                                                 const std::string &shiftSymbol);
+    std::shared_ptr<ItemSet<LR0Item>> GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
+                                           const std::string &shiftSymbol);
 
     void ShowDetails(std::ostream &os) const override;
 
@@ -33,7 +33,7 @@ private:
         std::shared_ptr<const ItemSet<LR0Item>> itemSet);
 
 private:
-    std::map<std::size_t, std::shared_ptr<const ItemSet<LR0Item>>> closures_;
+    std::vector<std::shared_ptr<const ItemSet<LR0Item>>> closures_;
     std::size_t closureNum_ = 0UL;
 };
 

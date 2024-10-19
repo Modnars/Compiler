@@ -12,7 +12,7 @@
 
 namespace mcc {
 
-std::shared_ptr<const ItemSet<LR0Item>> SLRParser::CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet) {
+std::shared_ptr<ItemSet<LR0Item>> SLRParser::CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet) {
     std::queue<std::shared_ptr<const LR0Item>> seq;
     std::set<std::shared_ptr<const LR0Item>> added;
     for (auto item : itemSet->Items()) {
@@ -42,8 +42,8 @@ std::shared_ptr<const ItemSet<LR0Item>> SLRParser::CLOSURE(std::shared_ptr<ItemS
     return 0;
 }
 
-std::shared_ptr<const ItemSet<LR0Item>> SLRParser::GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
-                                                        const std::string &shiftSymbol) {
+std::shared_ptr<ItemSet<LR0Item>> SLRParser::GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
+                                                  const std::string &shiftSymbol) {
     auto result = std::make_shared<ItemSet<LR0Item>>();
     for (auto item : itemSet->Items()) {
         if (item->HasNextSymbol() && item->NextSymbol() == shiftSymbol) {
@@ -57,9 +57,9 @@ void SLRParser::ShowDetails(std::ostream &os) const {
     grammar_.ShowDetails(os);
 
     std::cout << std::endl << "STATE CLOSURE:" << std::endl;
-    for (const auto &kv : closures_) {
-        std::cout << "\nI" << kv.first << ":" << std::endl;
-        for (auto item : kv.second->Items()) {
+    for (std::size_t i = 0UL; i < closures_.size(); ++i) {
+        std::cout << "\nI" << i << ":" << std::endl;
+        for (auto item : closures_[i]->Items()) {
             std::cout << item->ToString() << std::endl;
         }
     }
@@ -83,7 +83,7 @@ int SLRParser::Parse() {
     I0->Add(lr0Item(grammar_.AllProductions()[0], 0UL));
     CLOSURE(I0);
     I0->SetNumber(closureNum_++);
-    closures_.insert({I0->Number(), I0});
+    closures_.push_back(I0);
     std::queue<std::shared_ptr<ItemSet<LR0Item>>> seq;
     seq.push(I0);
     while (!seq.empty()) {
@@ -92,14 +92,14 @@ int SLRParser::Parse() {
         for (const auto &kv : computeGOTO(itemSet)) {
             CLOSURE(kv.second);
             auto iter = std::find_if(closures_.begin(), closures_.end(),
-                                     [&kv](auto &&closure) { return closure.second->Equals(kv.second); });
+                                     [&kv](auto &&closure) { return closure->Equals(kv.second); });
             if (iter == closures_.end()) {
                 kv.second->SetNumber(closureNum_++);
-                closures_.insert({kv.second->Number(), kv.second});
+                closures_.emplace_back(kv.second);
                 seq.push(kv.second);
                 parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
             } else {
-                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, iter->second->Number()));
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, (*iter)->Number()));
             }
         }
     }

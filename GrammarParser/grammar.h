@@ -20,6 +20,7 @@ public:
     std::string ToString() const;
 
     bool operator<(const Production &rhs) const { return number_ < rhs.number_; }
+    bool operator==(const Production &rhs) const { return number_ == rhs.number_; }
 
 public:
     const std::string &Left() const { return left_; }
@@ -106,7 +107,7 @@ public:
     /// @brief Compute the FirstSet for a SubFields for a production's right part.
     /// @warning When `@param begin` == `@param end`, the result is { Grammar::NilMark }.
     std::set<std::string> ComputeFirstSet(std::vector<std::string>::const_iterator begin,
-                                           std::vector<std::string>::const_iterator end) const;
+                                          std::vector<std::string>::const_iterator end) const;
 
     /// @brief Print the brief information of the grammar.
     void ShowDetails(std::ostream &os) const;

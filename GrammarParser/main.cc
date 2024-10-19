@@ -13,6 +13,7 @@
 #include "parser.h"
 #include "util.h"
 
+#include "lalr.h"
 #include "ll1.h"
 #include "lr1.h"
 #include "slr.h"
@@ -20,10 +21,7 @@
 namespace {
 
 std::vector<const char *> _parserNames = {
-    "UNKNOWN",
-    "LL(1)",
-    "SLR(1)",
-    "LR(1)",
+    "UNKNOWN", "LL(1)", "SLR(1)", "LR(1)", "LALR",
 };
 
 }
@@ -59,10 +57,11 @@ int main(int argc, char *argv[]) {
 
     int opt = 0;
     int option_index = 0;
-    ::option long_options[] = {
-        {"help", no_argument, 0, 'h'},       {"version", no_argument, 0, 'v'},     {"verbose", no_argument, 0, 'V'},
-        {"file", required_argument, 0, 'f'}, {"input", optional_argument, 0, 'i'}, {"ll1", no_argument, 0, 1},
-        {"slr", no_argument, 0, 2},          {"lr1", no_argument, 0, 3},           {"output", no_argument, 0, 'o'}};
+    ::option long_options[] = {{"help", no_argument, 0, 'h'},        {"version", no_argument, 0, 'v'},
+                               {"verbose", no_argument, 0, 'V'},     {"file", required_argument, 0, 'f'},
+                               {"input", optional_argument, 0, 'i'}, {"ll1", no_argument, 0, 1},
+                               {"slr", no_argument, 0, 2},           {"lr1", no_argument, 0, 3},
+                               {"lalr", no_argument, 0, 4},          {"output", no_argument, 0, 'o'}};
     while ((opt = getopt_long(argc, argv, "hvVf:i:o:", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'h':
@@ -101,6 +100,9 @@ int main(int argc, char *argv[]) {
             case 3:
                 parserType = mcc::ParserType::LR1;
                 break;
+            case 4:
+                parserType = mcc::ParserType::LALR;
+                break;
             default:
                 usage();
                 exit(1);
@@ -136,6 +138,9 @@ int main(int argc, char *argv[]) {
             break;
         case mcc::ParserType::LR1:
             parser = std::make_shared<mcc::LR1Parser>(grammar);
+            break;
+        case mcc::ParserType::LALR:
+            parser = std::make_shared<mcc::LALRParser>(grammar);
             break;
         case mcc::ParserType::UNKNOWN:
         default:
@@ -173,7 +178,6 @@ int main(int argc, char *argv[]) {
         parser->Analyze(std::cin);
     }
 
-    // auto filename = std::string(::basename(grammarFilepath.c_str()));
     auto filename = util::Filename(grammarFilepath);
 
     if (outDot) {

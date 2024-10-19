@@ -18,13 +18,14 @@ enum class ParserType : std::size_t {
     LL1 = 1UL,
     SLR1 = 2UL,
     LR1 = 3UL,
+    LALR = 4UL,
 };
 
 class Parser {
 public:
     virtual int Parse() = 0;
 
-    virtual int Analyze(std::istream &is) const = 0;
+    virtual void Analyze(std::istream &is) const = 0;
 
 public:
     virtual void ShowDetails(std::ostream &os) const { }

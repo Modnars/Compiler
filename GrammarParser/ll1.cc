@@ -33,7 +33,7 @@ int LL1Parser::Parse() {
     return parsedSucc_ ? 0 : 1;
 }
 
-int LL1Parser::Analyze(std::istream &is) const {
+void LL1Parser::Analyze(std::istream &is) const {
     if (!parsedSucc_) {
         util::LOG_WARN("[WARNING] grammar parsed failed, so the analyzing result is not valuable");
     }
@@ -81,7 +81,6 @@ int LL1Parser::Analyze(std::istream &is) const {
             util::LOG_ERROR("ANALYZE FAILED");
         }
     }
-    return 0;
 }
 
 void LL1Parser::ShowDetails(std::ostream &os) const {
@@ -100,7 +99,8 @@ void LL1Parser::ShowDetails(std::ostream &os) const {
 int LL1Parser::fillPredictionTable(const std::string &nonTerminal, const std::string &terminal,
                                    std::shared_ptr<const Production> production) {
     if (auto record = predictionTable_[nonTerminal][terminal]; record != nullptr) {
-        util::LOG_ERROR("[CONFLICT] Predict `%s` vs predict `%s`", record->ToString().c_str(), production->ToString().c_str());
+        util::LOG_ERROR("[CONFLICT] Predict `%s` vs predict `%s`", record->ToString().c_str(),
+                        production->ToString().c_str());
         return -1;
     }
     predictionTable_[nonTerminal][terminal] = production;
