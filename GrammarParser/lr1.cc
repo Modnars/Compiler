@@ -31,25 +31,25 @@ int LR1Parser::Parse() {
     parsedSucc_ = true;
     auto I0 = std::make_shared<ItemSet<LR1Item>>();
     I0->Add(newLr1Item(lr0Item(grammar_.AllProductions()[0], 0UL), {Grammar::EndMark}));
-    CLOSURE(I0);
+    I0 = CLOSURE(I0);
     I0->SetNumber(closureNum_++);
-    closures_.insert({I0->Number(), I0});
+    closures_.emplace_back(I0);
     std::queue<std::shared_ptr<ItemSet<LR1Item>>> seq;
     seq.push(I0);
     while (!seq.empty()) {
         auto itemSet = seq.front();
         seq.pop();
         for (const auto &kv : computeGOTO(itemSet)) {
-            CLOSURE(kv.second);
+            auto newClosure = CLOSURE(kv.second);
             auto iter = std::find_if(closures_.begin(), closures_.end(),
-                                     [&kv](auto &&closure) { return closure.second->Equals(kv.second); });
+                                     [newClosure](auto &&closure) { return closure->Equals(newClosure); });
             if (iter == closures_.end()) {
-                kv.second->SetNumber(closureNum_++);
-                closures_.insert({kv.second->Number(), kv.second});
-                seq.push(kv.second);
-                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
+                newClosure->SetNumber(closureNum_++);
+                closures_.emplace_back(newClosure);
+                seq.push(newClosure);
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, newClosure->Number()));
             } else {
-                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, iter->second->Number()));
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, (*iter)->Number()));
             }
         }
     }
@@ -60,9 +60,9 @@ void LR1Parser::ShowDetails(std::ostream &os) const {
     grammar_.ShowDetails(os);
 
     os << std::endl << "STATE CLOSURE:" << std::endl;
-    for (const auto &kv : closures_) {
-        os << "\nI" << kv.first << ":" << std::endl;
-        for (auto item : kv.second->Items()) {
+    for (const auto &closure : closures_) {
+        os << "\nI" << closure->Number() << ":" << std::endl;
+        for (auto item : closure->Items()) {
             os << item->ToString() << std::endl;
         }
     }

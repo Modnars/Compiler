@@ -9,7 +9,7 @@
 #include <queue>
 #include <sstream>
 
-#include "lalr1.h"
+#include "lalr.h"
 #include "lr.h"
 #include "lr1.h"
 #include "util.h"
@@ -26,8 +26,8 @@ int LALRParser::Parse() {
     coreI0->Add(lr0Item(grammar_.AllProductions()[0], 0UL));
     coreI0->SetNumber(coreItemSetNum_++);
     coreItemSets_.emplace_back(coreI0);
-    std::set<std::shared_ptr<const ItemSet<LR0Item>>> added;
-    std::queue<std::shared_ptr<const ItemSet<LR0Item>>> seq;
+    std::set<std::shared_ptr<ItemSet<LR0Item>>> added;
+    std::queue<std::shared_ptr<ItemSet<LR0Item>>> seq;
     seq.push(coreI0);
     while (!seq.empty()) {
         auto coreItemSet = seq.front();
@@ -68,7 +68,7 @@ int LALRParser::Parse() {
             isSpreading |= spreadInClosure(coreItemSet);
             if (auto iter = gotoStates_.find(coreItemSet->Number()); iter != gotoStates_.end()) {
                 for (auto nextState : gotoStates_[coreItemSet->Number()]) {
-                    isSpreading |= spreadFromState(coreItemSet->Number(), nextState);
+                    isSpreading |= spreadBetweenItemSet(coreItemSet->Number(), nextState);
                     seq.push(nextState);
                 }
             }
@@ -89,7 +89,7 @@ int LALRParser::Parse() {
     return parsedSucc_ ? 0 : 1;
 }
 
-std::shared_ptr<const ItemSet<LR0Item>> LALRParser::CLOSURE(std::shared_ptr<const ItemSet<LR0Item>> itemSet) {
+std::shared_ptr<ItemSet<LR0Item>> LALRParser::CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet) {
     auto result = std::make_shared<ItemSet<LR0Item>>();
     std::queue<std::shared_ptr<const LR0Item>> seq;
     std::set<std::shared_ptr<const LR0Item>> added;
@@ -121,12 +121,12 @@ void LALRParser::ShowDetails(std::ostream &os) const {
     grammar_.ShowDetails(os);
 
     os << "CORE ITEMSETS:\n";
-    for (std::size_t i = 0UL; i < coreItemSets_.size(); ++i) {
-        os << std::endl << "I" << i << ":\n";
-        for (auto item : coreItemSets_[i]->Items()) {
+    for (const auto &itemSet : coreItemSets_) {
+        os << std::endl << "I" << itemSet->Number() << ":\n";
+        for (auto item : itemSet->Items()) {
             std::stringstream ss;
             os << "[" << item->ToString() << ", ";
-            const auto &la = lookahead(i, item);
+            const auto &la = lookahead(itemSet->Number(), item);
             for (auto iter = la.begin(); iter != la.end(); ++iter) {
                 if (iter != la.begin()) {
                     ss << "/";
@@ -226,7 +226,7 @@ bool LALRParser::spreadInClosure(std::shared_ptr<const ItemSet<LR0Item>> coreIte
     return isSpreading;
 }
 
-bool LALRParser::spreadFromState(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> toState) {
+bool LALRParser::spreadBetweenItemSet(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> toState) {
     bool isSpreading = false;
     for (auto coreItem : toState->Items()) {
         isSpreading |= addLookahead(toState->Number(), coreItem,

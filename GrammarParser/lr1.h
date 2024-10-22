@@ -73,7 +73,7 @@ private:
 
 private:
     std::map<std::pair<std::shared_ptr<const LR0Item>, std::set<std::string>>, std::shared_ptr<const LR1Item>> items_;
-    std::map<std::size_t, std::shared_ptr<const ItemSet<LR1Item>>> closures_;
+    std::vector<std::shared_ptr<const ItemSet<LR1Item>>> closures_;
     std::size_t closureNum_ = 0UL;
 };
 

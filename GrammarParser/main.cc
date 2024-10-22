@@ -13,7 +13,7 @@
 #include "parser.h"
 #include "util.h"
 
-#include "lalr1.h"
+#include "lalr.h"
 #include "ll1.h"
 #include "lr1.h"
 #include "slr.h"

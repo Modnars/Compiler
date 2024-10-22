@@ -20,7 +20,7 @@ public:
     int Parse() override;
 
 public:
-    std::shared_ptr<const ItemSet<LR0Item>> CLOSURE(std::shared_ptr<const ItemSet<LR0Item>> itemSet);
+    std::shared_ptr<ItemSet<LR0Item>> CLOSURE(std::shared_ptr<ItemSet<LR0Item>> itemSet);
 
     void ShowDetails(std::ostream &os) const override;
 
@@ -46,7 +46,7 @@ private:
 
     bool spreadInClosure(std::shared_ptr<const ItemSet<LR0Item>> coreItemSet);
 
-    bool spreadFromState(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> toState);
+    bool spreadBetweenItemSet(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> toState);
 
     const std::set<std::string> &lookahead(std::size_t stateNo, std::shared_ptr<const LR0Item> lr0It) const {
         static const std::set<std::string> empty;

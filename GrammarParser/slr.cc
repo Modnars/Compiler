@@ -39,7 +39,7 @@ std::shared_ptr<ItemSet<LR0Item>> SLRParser::CLOSURE(std::shared_ptr<ItemSet<LR0
             }
         }
     }
-    return 0;
+    return itemSet;
 }
 
 std::shared_ptr<ItemSet<LR0Item>> SLRParser::GOTO(std::shared_ptr<const ItemSet<LR0Item>> itemSet,
@@ -81,7 +81,7 @@ int SLRParser::Parse() {
     parsedSucc_ = true;
     auto I0 = std::make_shared<ItemSet<LR0Item>>();
     I0->Add(lr0Item(grammar_.AllProductions()[0], 0UL));
-    CLOSURE(I0);
+    I0 = CLOSURE(I0);
     I0->SetNumber(closureNum_++);
     closures_.push_back(I0);
     std::queue<std::shared_ptr<ItemSet<LR0Item>>> seq;
@@ -90,14 +90,14 @@ int SLRParser::Parse() {
         auto itemSet = seq.front();
         seq.pop();
         for (const auto &kv : computeGOTO(itemSet)) {
-            CLOSURE(kv.second);
+            auto newClosure = CLOSURE(kv.second);
             auto iter = std::find_if(closures_.begin(), closures_.end(),
-                                     [&kv](auto &&closure) { return closure->Equals(kv.second); });
+                                     [newClosure](auto &&closure) { return closure->Equals(newClosure); });
             if (iter == closures_.end()) {
-                kv.second->SetNumber(closureNum_++);
-                closures_.emplace_back(kv.second);
-                seq.push(kv.second);
-                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
+                newClosure->SetNumber(closureNum_++);
+                closures_.emplace_back(newClosure);
+                seq.push(newClosure);
+                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, newClosure->Number()));
             } else {
                 parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, (*iter)->Number()));
             }
