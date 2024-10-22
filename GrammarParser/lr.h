@@ -130,27 +130,6 @@ protected:
 };
 
 template <typename _Item>
-std::set<std::string> ComputeLookahead(const Grammar &grammar, std::shared_ptr<const _Item> lrItem) {
-    if (lrItem->CanReduce()) {
-        return lrItem->lookahead_;
-    }
-    if (lrItem->HasNextSymbol() && !grammar.IsNonTerminal(lrItem->NextSymbol())) {
-        return lrItem->lookahead_;
-    }
-    auto iter = lrItem->Right().begin();
-    std::advance(iter, lrItem->DotPos() + 1UL);
-    auto result = grammar.ComputeFirstSet(iter, lrItem->Right().end());
-    if (result.count(Grammar::NilMark)) {
-        result.erase(Grammar::NilMark);
-        // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
-        // Since lookahead is a terminal symbol (`lookahead_` should also be a set of terminal symbols), we can insert
-        // lookahead (`lookahead_`) directly.
-        result.insert(lrItem->lookahead_.begin(), lrItem->lookahead_.end());
-    }
-    return result;
-}
-
-template <typename _Item>
 std::set<std::string> ComputeLookahead(const Grammar &grammar, std::shared_ptr<const _Item> lrItem,
                                        const std::set<std::string> &lookahead) {
     if (lrItem->CanReduce()) {

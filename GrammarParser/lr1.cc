@@ -24,26 +24,6 @@ std::string LR1Item::ToString() const {
     return "[" + lr0Item_->ToString() + ", " + ss.str() + "]";
 }
 
-// std::set<std::string> ComputeLookahead(const Grammar &grammar, std::shared_ptr<const LR1Item> lr1Item) {
-//     if (lr1Item->CanReduce()) {
-//         return lr1Item->lookahead_;
-//     }
-//     if (lr1Item->HasNextSymbol() && !grammar.IsNonTerminal(lr1Item->NextSymbol())) {
-//         return lr1Item->lookahead_;
-//     }
-//     auto iter = lr1Item->Right().begin();
-//     std::advance(iter, lr1Item->DotPos() + 1UL);
-//     auto result = grammar.ComputeFirstSet(iter, lr1Item->Right().end());
-//     if (result.count(Grammar::NilMark)) {
-//         result.erase(Grammar::NilMark);
-//         // Compute the FIRST(β lookahead). If FIRST(β) contains ε, then FIRST(β lookahead) contains FIRST(lookahead).
-//         // Since lookahead is a terminal symbol (`lookahead_` should also be a set of terminal symbols), we can insert
-//         // lookahead (`lookahead_`) directly.
-//         result.insert(lr1Item->lookahead_.begin(), lr1Item->lookahead_.end());
-//     }
-//     return result;
-// }
-
 int LR1Parser::Parse() {
     grammar_.ComputeAndCacheFirstSet();
     computeAndCacheLr0Items();
@@ -97,7 +77,7 @@ void LR1Parser::ShowDetails(std::ostream &os) const {
 }
 
 std::set<std::string> LR1Parser::computeLookahead(std::shared_ptr<const LR1Item> item) const {
-    return ComputeLookahead(grammar_, item);
+    return ComputeLookahead(grammar_, item, item->lookahead_);
 }
 
 std::shared_ptr<ItemSet<LR1Item>> LR1Parser::CLOSURE(std::shared_ptr<ItemSet<LR1Item>> itemSet) {
