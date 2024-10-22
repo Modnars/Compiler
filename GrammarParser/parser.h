@@ -18,7 +18,7 @@ enum class ParserType : std::size_t {
     LL1 = 1UL,
     SLR1 = 2UL,
     LR1 = 3UL,
-    LALR = 4UL,
+    LALR1 = 4UL,
 };
 
 class Parser {

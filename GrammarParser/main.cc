@@ -13,7 +13,7 @@
 #include "parser.h"
 #include "util.h"
 
-#include "lalr.h"
+#include "lalr1.h"
 #include "ll1.h"
 #include "lr1.h"
 #include "slr.h"
@@ -21,7 +21,7 @@
 namespace {
 
 std::vector<const char *> _parserNames = {
-    "UNKNOWN", "LL(1)", "SLR(1)", "LR(1)", "LALR",
+    "UNKNOWN", "LL(1)", "SLR(1)", "LR(1)", "LALR(1)",
 };
 
 }
@@ -46,6 +46,7 @@ void usage() {
               << "  --ll1          Parse the Grammar File with LL(1).\n"
               << "  --slr          Parse the Grammar File with SLR(1).\n"
               << "  --lr1          Parse the Grammar File with LR(1).\n"
+              << "  --lalr         Parse the Grammar File with LALR(1).\n"
               << std::flush;
 }
 
@@ -101,7 +102,7 @@ int main(int argc, char *argv[]) {
                 parserType = mcc::ParserType::LR1;
                 break;
             case 4:
-                parserType = mcc::ParserType::LALR;
+                parserType = mcc::ParserType::LALR1;
                 break;
             default:
                 usage();
@@ -139,14 +140,14 @@ int main(int argc, char *argv[]) {
         case mcc::ParserType::LR1:
             parser = std::make_shared<mcc::LR1Parser>(grammar);
             break;
-        case mcc::ParserType::LALR:
+        case mcc::ParserType::LALR1:
             parser = std::make_shared<mcc::LALRParser>(grammar);
             break;
         case mcc::ParserType::UNKNOWN:
         default:
             util::LOG_ERROR(
-                "[ERROR] You must select a grammar type in LL(1), SLR(1) and LR(1). The option is `--ll1`, `--slr` or "
-                "`--lr1`");
+                "[ERROR] You must select a grammar type in LL(1), SLR(1), LR(1) and LALR(1). The option is `--ll1`, "
+                "`--slr`, `--lr1` or `--lalr`");
             exit(1);
     }
     if (parser == nullptr) {

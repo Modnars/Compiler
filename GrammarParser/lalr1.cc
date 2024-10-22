@@ -9,7 +9,7 @@
 #include <queue>
 #include <sstream>
 
-#include "lalr.h"
+#include "lalr1.h"
 #include "lr.h"
 #include "lr1.h"
 #include "util.h"
