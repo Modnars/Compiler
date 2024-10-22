@@ -75,15 +75,6 @@ private:
     std::shared_ptr<LR0Item> shift_ = nullptr;
 };
 
-// inline std::shared_ptr<LR0Item> NewLR0Item(std::shared_ptr<const Production> production, std::size_t dotPos,
-//                                            std::shared_ptr<LR0Item> prev = nullptr) {
-//     auto newItem = std::make_shared<LR0Item>(production, dotPos);
-//     if (prev) {
-//         prev->shift_ = newItem;
-//     }
-//     return newItem;
-// }
-
 template <typename _Item>
 class ItemSet {
 public:

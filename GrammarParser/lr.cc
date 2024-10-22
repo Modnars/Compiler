@@ -51,7 +51,10 @@ void LRParser::Analyze(std::istream &is) const {
 
         stateStack.push(0UL);
 
-        auto tokens = util::Split(util::Trim(line), " ");
+        std::vector<std::string> tokens{};
+        if (line = util::Trim(line); line != "") {
+            tokens = util::Split(line, " ");
+        }
         tokens.emplace_back(Grammar::EndMark);
         bool acceptSucc = true;
         std::size_t idx = 0UL;
