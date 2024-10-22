@@ -4,6 +4,8 @@
  * @Note: Copyrights (c) 2024 modnarshen. All rights reserved.
  */
 #include <algorithm>
+#include <cctype>
+#include <memory>
 #include <queue>
 #include <sstream>
 
@@ -30,49 +32,75 @@ int LALRParser::Parse() {
     computeAndCacheLr0Items();
 
     parsedSucc_ = true;
-    auto I0 = std::make_shared<ItemSet<LALRItem>>();
-    I0->Add(lalrItem(lr0Item(grammar_.AllProductions()[0], 0UL), {}));
-    CLOSURE(I0);
-    I0->SetNumber(closureNum_++);
-    closures_.emplace_back(I0);
-    std::queue<std::shared_ptr<ItemSet<LALRItem>>> seq;
-    seq.push(I0);
+
+    auto coreI0 = std::make_shared<ItemSet<LR0Item>>();
+    coreI0->Add(lr0Item(grammar_.AllProductions()[0], 0UL));
+    coreI0->SetNumber(closureNum_++);
+    coreClosures_.emplace_back(coreI0);
+    std::set<std::shared_ptr<const ItemSet<LR0Item>>> added;
+    std::queue<std::shared_ptr<const ItemSet<LR0Item>>> seq;
+    seq.push(coreI0);
     while (!seq.empty()) {
-        auto itemSet = seq.front();
+        auto coreItemSet = seq.front();
         seq.pop();
-        for (const auto &kv : computeGOTO(itemSet)) {
-            CLOSURE(kv.second);
-            auto iter = std::find_if(closures_.begin(), closures_.end(),
+        if (added.count(coreItemSet)) {
+            continue;
+        }
+        added.insert(coreItemSet);
+        for (const auto &kv : computeGOTO(CLOSURE(coreItemSet))) {
+            auto iter = std::find_if(coreClosures_.begin(), coreClosures_.end(),
                                      [&kv](auto &&closure) { return closure->Equals(kv.second); });
-            if (iter == closures_.end()) {
+            if (iter == coreClosures_.end()) {
                 kv.second->SetNumber(closureNum_++);
-                closures_.emplace_back(kv.second);
+                coreClosures_.emplace_back(kv.second);
                 seq.push(kv.second);
-                // parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, kv.second->Number()));
+                addGotoState(coreItemSet->Number(), kv.second);
+                parsedSucc_ &= (0 == fillActionTable(coreItemSet->Number(), kv.first, kv.second->Number()));
             } else {
-                // parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), kv.first, (*iter)->Number()));
+                addGotoState(coreItemSet->Number(), *iter);
+                parsedSucc_ &= (0 == fillActionTable(coreItemSet->Number(), kv.first, (*iter)->Number()));
             }
         }
     }
-    bool isSpreading = spreadLookahead(lalrItem(lr0Item(grammar_.AllProductions()[0], 0UL), {}), {Grammar::EndMark});
-    std::cout << isSpreading << std::endl;
+
+    bool isSpreading = addLookahead(0, lr0Item(grammar_.AllProductions()[0], 0UL), {Grammar::EndMark});
+    std::queue<std::shared_ptr<const ItemSet<LR0Item>>> sequence;
+    std::set<std::shared_ptr<const ItemSet<LR0Item>>> haded;
+    sequence.push(coreI0);
+    while (!sequence.empty()) {
+        auto coreItemSet = sequence.front();
+        sequence.pop();
+        if (haded.count(coreItemSet)) {
+            continue;
+        }
+        haded.insert(coreItemSet);
+        isSpreading |= spreadInClosure(coreItemSet);
+        for (auto nextState : gotoStates_[coreItemSet->Number()]) {
+            isSpreading |= spreadFromState(coreItemSet->Number(), nextState);
+            sequence.push(nextState);
+        }
+    }
+
+    // for (std::size_t stateNo = 0UL; stateNo < coreClosures_.size(); ++stateNo) {
+    //     for (auto coreItem : coreClosures_[stateNo]->Items()) {
+    //         if (!coreItem->CanReduce()) {
+    //             continue;
+    //         }
+    //         for (const auto &symbol : lookahead(stateNo, coreItem)) {
+    //             parsedSucc_ &= (0 == fillActionTable(stateNo, symbol, -coreItem->GetProduction()->Number()));
+    //         }
+    //     }
+    // }
+
     return parsedSucc_ ? 0 : 1;
 }
 
-std::shared_ptr<ItemSet<LALRItem>> LALRParser::CLOSURE(std::shared_ptr<ItemSet<LALRItem>> itemSet) {
-    std::queue<std::shared_ptr<const LALRItem>> seq;
-    std::set<std::shared_ptr<const LALRItem>> added;
+std::shared_ptr<const ItemSet<LR0Item>> LALRParser::CLOSURE(std::shared_ptr<const ItemSet<LR0Item>> itemSet) {
+    auto result = std::make_shared<ItemSet<LR0Item>>();
+    std::queue<std::shared_ptr<const LR0Item>> seq;
+    std::set<std::shared_ptr<const LR0Item>> added;
     for (auto item : itemSet->Items()) {
-        added.insert(item);
-        if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
-            continue;
-        }
-        for (auto p : grammar_.GetProductions(item->NextSymbol())) {
-            auto newItem = lalrItem(lr0Item(p, 0UL), {});
-            if (!added.count(newItem)) {
-                seq.push(newItem);
-            }
-        }
+        seq.push(item);
     }
     while (!seq.empty()) {
         auto item = seq.front();
@@ -81,31 +109,73 @@ std::shared_ptr<ItemSet<LALRItem>> LALRParser::CLOSURE(std::shared_ptr<ItemSet<L
             continue;
         }
         added.insert(item);
-        itemSet->Add(item);
-        if (item->HasNextSymbol() && !grammar_.IsNonTerminal(item->NextSymbol())) {
+        result->Add(item);
+        if (!item->HasNextSymbol() || !grammar_.IsNonTerminal(item->NextSymbol())) {
             continue;
         }
         for (auto p : grammar_.GetProductions(item->NextSymbol())) {
-            auto newItem = lalrItem(lr0Item(p, 0UL), {});
+            auto newItem = lr0Item(p, 0UL);
             if (!added.count(newItem)) {
                 seq.push(newItem);
             }
         }
     }
-    return 0;
+    return result;
 }
 
 void LALRParser::ShowDetails(std::ostream &os) const {
     grammar_.ShowDetails(os);
 
-    std::cout << std::endl << "STATE CLOSURE:\n";
-    for (std::size_t i = 0UL; i < closures_.size(); ++i) {
+    os << "CORE ITEMSETS:\n";
+    for (std::size_t i = 0UL; i < coreClosures_.size(); ++i) {
         std::cout << std::endl << "I" << i << ":\n";
-        for (auto item : closures_[i]->Items()) {
-            std::cout << item->ToString() << "\n";
+        for (auto item : coreClosures_[i]->Items()) {
+            std::stringstream ss;
+            os << "[" << item->ToString() << ", ";
+            const auto &la = lookahead(i, item);
+            for (auto iter = la.begin(); iter != la.end(); ++iter) {
+                if (iter != la.begin()) {
+                    ss << "/";
+                }
+                ss << *iter;
+            }
+            os << ss.str() << "]\n";
         }
     }
-    std::cout << std::endl;
+    os << std::endl;
+
+    std::cout << "GOTO STATES:\n";
+    for (std::size_t stateNo = 0UL; stateNo < gotoStates_.size(); ++stateNo) {
+        if (gotoStates_[stateNo].empty()) {
+            continue;
+        }
+        std::cout << "I" << stateNo << ":\n";
+        for (const auto &toState : gotoStates_[stateNo]) {
+            for (auto item : toState->Items()) {
+                std::cout << "I" << toState->Number() << ": " << item->ToString() << "\n";
+            }
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "LOOKAHEAD:\n";
+    for (std::size_t stateNo = 0UL; stateNo < itemSetLookahead_.size(); ++stateNo) {
+        std::cout << "I" << stateNo << ":\n";
+        for (const auto &kv : itemSetLookahead_[stateNo]) {
+            std::stringstream ss;
+            ss << "[" << kv.first->ToString() << ", ";
+            for (auto iter = kv.second.begin(); iter != kv.second.end(); ++iter) {
+                if (iter != kv.second.begin()) {
+                    ss << "/";
+                }
+                ss << *iter;
+            }
+            ss << "]";
+            std::cout << ss.str() << "\n";
+        }
+        std::cout << std::endl;
+    }
+
     std::cout << "ACTION TABLE:\n";
     for (std::size_t i = 0UL; i < actionTable_.size(); ++i) {
         std::cout << i << ":\t";
@@ -116,23 +186,67 @@ void LALRParser::ShowDetails(std::ostream &os) const {
     }
 }
 
-std::map<std::string, std::shared_ptr<ItemSet<LALRItem>>> LALRParser::computeGOTO(
-    std::shared_ptr<const ItemSet<LALRItem>> itemSet) {
-    std::map<std::string, std::shared_ptr<ItemSet<LALRItem>>> targets;
+std::map<std::string, std::shared_ptr<ItemSet<LR0Item>>> LALRParser::computeGOTO(
+    std::shared_ptr<const ItemSet<LR0Item>> itemSet) {
+    std::map<std::string, std::shared_ptr<ItemSet<LR0Item>>> targets;
     for (auto item : itemSet->Items()) {
         if (item->HasNextSymbol()) {
             if (targets[item->NextSymbol()] == nullptr) {
-                targets[item->NextSymbol()] = std::make_shared<ItemSet<LALRItem>>();
+                targets[item->NextSymbol()] = std::make_shared<ItemSet<LR0Item>>();
             }
-            targets[item->NextSymbol()]->Add(lalrItem(item->lr0Item_->Shift(), item->lookahead_));
-        } else if (item->CanReduce()) {  // actually `item->CanReduce()` always equals to `!item->HasNextSymbol()`
-            auto production = item->lr0Item_->GetProduction();
-            for (const auto &symbol : item->lookahead_) {
-                parsedSucc_ &= (0 == fillActionTable(itemSet->Number(), symbol, -production->Number()));
-            }
+            targets[item->NextSymbol()]->Add(item->Shift());
         }
     }
     return targets;
+}
+
+void LALRParser::addGotoState(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> itemSet) {
+    if (gotoStates_.size() < from + 1UL) {
+        gotoStates_.reserve(from + 1UL);
+        gotoStates_.insert(gotoStates_.end(), from + 1UL - gotoStates_.size(),
+                           std::vector<std::shared_ptr<const ItemSet<LR0Item>>>());
+    }
+    gotoStates_[from].emplace_back(itemSet);
+}
+
+bool LALRParser::spreadInClosure(std::shared_ptr<const ItemSet<LR0Item>> coreItemSet) {
+    std::cout << "spread " << coreItemSet->Number() << std::endl;
+    bool isSpreading = false;
+    std::queue<std::shared_ptr<const LR0Item>> seq;
+    std::set<std::shared_ptr<const LR0Item>> added;
+    for (auto item : coreItemSet->Items()) {
+        seq.push(item);
+    }
+    while (!seq.empty()) {
+        auto item = seq.front();
+        seq.pop();
+        if (added.count(item)) {
+            continue;
+        }
+        added.insert(item);
+        if (!item->HasNextSymbol() || !grammar_.IsNonTerminal(item->NextSymbol())) {
+            continue;
+        }
+        for (auto p : grammar_.GetProductions(item->NextSymbol())) {
+            auto newItem = lr0Item(p, 0UL);
+            auto newLookahead = ComputeLookahead(grammar_, item, lookahead(coreItemSet->Number(), item));
+            isSpreading |= updateLookahead(coreItemSet->Number(), newItem, newLookahead);
+            if (added.count(newItem)) {
+                continue;
+            }
+            seq.push(newItem);
+        }
+    }
+    return isSpreading;
+}
+
+bool LALRParser::spreadFromState(std::size_t from, std::shared_ptr<const ItemSet<LR0Item>> toState) {
+    bool isSpreading = false;
+    for (auto coreItem : toState->Items()) {
+        isSpreading |= addLookahead(toState->Number(), coreItem,
+                                    lookahead(from, lr0Item(coreItem->GetProduction(), coreItem->DotPos() - 1UL)));
+    }
+    return isSpreading;
 }
 
 }  // namespace mcc
