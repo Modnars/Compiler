@@ -58,6 +58,7 @@ Usage: GrammarParser --file GRAMMAR_FILE [OPTION]
 | 4.67 | × | × | × | × | 存在二义性的 if, else 语法 |
 | Example.4.58 | × | × | × | ✓ | 例 4.58 文法 |
 | excelconfc | × | ✓ | ✓ | ✓ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 文法 |
+| excelconfc.rr | × | ✓ | ✓ | ✓ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 右递归文法 |
 | program | × | ✓ | ✓ | ✓ | 自制语言语法 |
 | Practice.4.2.1 | × | ✓ | ✓ | ✓ | 练习 4.2.1 文法的增广文法 |
 | Practice.4.2.2.1 | × | ✓ | ✓ | ✓ | 练习 4.2.2 (1) 文法的增广文法 |
