@@ -110,8 +110,7 @@ void LRParser::OutputToGraphviz(std::ostream &os) const {
             if (grammar_.IsNonTerminal(kv.first)) {
                 continue;
             }
-            os << "    "
-               << "I" << stateNo << " -> I" << kv.second << " [label=\"" << kv.first << "\"]" << std::endl;
+            os << "    I" << stateNo << " -> I" << kv.second << " [label=\"" << kv.first << "\"]" << std::endl;
         }
     }
     os << "}" << std::endl;
@@ -155,7 +154,7 @@ void LRParser::OutputToCsv(std::ostream &os) const {
 void LRParser::OutputToGo(std::ostream &os) const {
     std::uint32_t indent = 0U;
 
-    os << "package mcc;\n\n"
+    os << "package mcc\n\n"
        << "var (\n";
 
     os << util::Indent(++indent, '\t') << "Productions = []string{\n";
