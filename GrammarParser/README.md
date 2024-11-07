@@ -38,6 +38,10 @@ Usage: GrammarParser --file GRAMMAR_FILE [OPTION]
 
 如果对语法分析器的大小做一下比较，一个文法的 SLR 和 LALR 分析表总是具有相同数量的状态，对于像 C 这样的语言来说，通常有几百个状态。对于同样大小的语言，规范 LR 分析表通常有几千个状态。因此，构造 SLR 和 LALR 分析表要比构造规范 LR 分析表更容易，而且更经济。
 
+## 应用
+
+[`excelconfc`](https://github.com/Modnars/excelconfc) 是一个以此工具生成的语法分析动作表为基础的 Excel 配置表解析导出配置文件的工具。其采用的解析文法类型为 LALR(1) 文法，具体文法为 excelconf.mini.txt（可参考测试样例）。
+
 ## 测试
 
 为了更为直观地感受文法复杂程度，以及不同分析技术的分析能力，对于提供的几种测试文法，其测试结果如下：
@@ -59,6 +63,7 @@ Usage: GrammarParser --file GRAMMAR_FILE [OPTION]
 | Example.4.58 | × | × | × | ✓ | 例 4.58 文法 |
 | excelconfc | × | ✓ | ✓ | ✓ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 文法 |
 | excelconfc.rr | × | ✓ | ✓ | ✓ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 右递归文法 |
+| excelconfc.mini | × | ✓ | ✓ | ✓ | 导表工具 [`excelconfc`](https://github.com/Modnars/excelconfc) 精简文法 |
 | program | × | ✓ | ✓ | ✓ | 自制语言语法 |
 | Practice.4.2.1 | × | ✓ | ✓ | ✓ | 练习 4.2.1 文法的增广文法 |
 | Practice.4.2.2.1 | × | ✓ | ✓ | ✓ | 练习 4.2.2 (1) 文法的增广文法 |
